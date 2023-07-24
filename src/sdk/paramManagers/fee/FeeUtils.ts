@@ -1,15 +1,15 @@
-import { Cluster, Connection, PublicKey } from '@solana/web3.js';
-import {
-    getAssociatedTokenAddress, getMinimumBalanceForRentExemptAccount, getAccount, TokenInvalidAccountOwnerError, TokenAccountNotFoundError,
-} from '@solana/spl-token';
+import { Cluster, Connection } from '@solana/web3.js';
 import { PriceStatus, PythHttpClient, getPythProgramKeyForCluster } from '@pythnetwork/client';
-import { getDenomination, getMintAccount, getPythPriceAcc } from '../../../public/tokenTypes/TokenTypeFuncs.js';
+import { getDenomination, getPythPriceAcc, getTokenInfo } from '../../../public/tokenTypes/TokenTypeFuncs.js';
 import { BasicFee, Fee } from '../../../public/Fee.js';
 import { sleep, zipSameLength } from '../../utils/utils.js';
 import { TokenType } from '../../../public/tokenTypes/TokenType.js';
 
 // Default precision is 9 due to 1 SOL = 10^9 Lamports
 const DEFAULT_PRECISION = 9;
+
+// This is the buffer multiplier we use to account for price fluctuations
+const FEE_BUFFER_MULTIPLIER = 1.02;
 
 export class FeeUtils {
     /**
@@ -27,28 +27,31 @@ export class FeeUtils {
         extraFeeInToken: number,
     ): Fee {
         if (lamportFee.tokenType !== 'LAMPORTS') throw new Error('Expected fee in lamports');
-        const bufferMultiplier = tokenType === 'LAMPORTS' ? 1 : 1.02;
-        const lamportAmounts: number[] = [lamportFee.txFee, lamportFee.privacyFee, lamportFee.tokenAccRent];
-        const tokenAmounts = lamportAmounts.map((lamportAmount) => FeeUtils.lamportsToToken(lamportAmount, lamportsPerToken));
         return {
             tokenType,
-            txFee: Math.ceil(tokenAmounts[0] * bufferMultiplier),
-            privacyFee: Math.ceil(tokenAmounts[1] * bufferMultiplier),
-            tokenAccRent: Math.ceil(tokenAmounts[2] * bufferMultiplier),
+            txFee: FeeUtils.lamportFeeAmountToTokenFeeAmount(lamportFee.txFee, tokenType, lamportsPerToken),
+            privacyFee: FeeUtils.lamportFeeAmountToTokenFeeAmount(lamportFee.privacyFee, tokenType, lamportsPerToken),
+            tokenAccRent: FeeUtils.lamportFeeAmountToTokenFeeAmount(lamportFee.tokenAccRent, tokenType, lamportsPerToken),
             lamportsPerToken,
             extraFee: extraFeeInToken,
         };
     }
 
-    public static async getTokenSendFee(connection: Connection, cluster: Cluster, tokenType: TokenType, recipient?: PublicKey): Promise<bigint> {
-        // No fee for creating an associate acc if we're sennding lamports or we have no recipient (i.e. we're merging)
-        if (tokenType === 'LAMPORTS' || recipient === undefined) return BigInt(0);
-
-        const rentPromise = getMinimumBalanceForRentExemptAccount(connection);
-        const mintAcc = getMintAccount(tokenType, cluster);
-        // Acc exists? No extra cost
-        if (await FeeUtils.hasAssociatedAccount(connection, recipient, mintAcc)) return BigInt(0);
-        return rentPromise.then((rent) => BigInt(rent));
+    /**
+     * Fee amounts get buffered with an extra 2% to account for price fluctuations
+     * @param lamportFee
+     * @param tokenType
+     * @param lamportsPerToken
+     * @returns
+     */
+    public static lamportFeeAmountToTokenFeeAmount(
+        lamportFee: number,
+        tokenType: TokenType,
+        lamportsPerToken: number,
+    ): number {
+        const bufferMultiplier = tokenType === 'LAMPORTS' ? 1 : FEE_BUFFER_MULTIPLIER;
+        const tokenAmount = FeeUtils.lamportsToToken(lamportFee, lamportsPerToken);
+        return Math.ceil(tokenAmount * bufferMultiplier);
     }
 
     public static async getLamportsPerToken(connection: Connection, cluster: Cluster, tokenType: TokenType): Promise<number> {
@@ -91,19 +94,21 @@ export class FeeUtils {
         }
         throw new Error('Failed to fetch/parse pyth data, this usually means the price is undefined or the status is not trading');
     }
+}
 
-    private static hasAssociatedAccount(connection: Connection, recipient: PublicKey, mintAcc: PublicKey): Promise<boolean> {
-        return getAssociatedTokenAddress(mintAcc, recipient, true).then(async (associatedTokenAcc) => {
-            try {
-                const account = await getAccount(connection, associatedTokenAcc);
-                return account !== undefined;
-            }
-            catch (error: unknown) {
-                if (error instanceof TokenAccountNotFoundError || error instanceof TokenInvalidAccountOwnerError) {
-                    return false;
-                }
-                throw error;
-            }
-        });
-    }
+/**
+ * Returns the minimum amount of tokens we can send/topup with Elusiv. This function is needed as the minimum amount we can send is the largest out of either
+ * 1) TokenInfo.min
+ * 2) The amount of tokens needed to pay for the rent of the token account in that tokentype
+ * The reason it is like this is because token prices fluctuate, so the static amount in TokenInfo.minAmount might not always be
+ * correct, so this function is the way to go
+ * @param tokenAccRentInTokenType The token type we want to get the minimum amount for in the tokenType (i.e. in USDC, not in lamports if we're sending USDC)
+ * @param tokenAccRentLamports The rent-exempt amount in lamports needed for a token account
+ * @returns The minimum amount of tokens of said tokentype we can send/topup with Elusiv
+ */
+export function getMinimumAmount(tokenType: TokenType, tokenAccRentInTokenType: number): number {
+    // No buffer for lamports
+    const buffer = tokenType === 'LAMPORTS' ? 1 : FEE_BUFFER_MULTIPLIER;
+    const min = Math.ceil(tokenAccRentInTokenType * buffer);
+    return Math.max(getTokenInfo(tokenType).min, min);
 }

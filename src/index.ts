@@ -22,3 +22,4 @@ export { TxTypes } from './public/TxTypes.js';
 export { TransactionStatus } from './public/TransactionStatus.js';
 export { getSendTxWithViewingKey, ViewingKey } from './compliance/ViewingKey';
 export { SEED_MESSAGE } from './constants';
+export { getMinimumAmount } from '../src/sdk/paramManagers/fee/FeeUtils.js';

@@ -28,7 +28,7 @@ import { pubKeyToBigInt } from '../../utils/pubKeyUtils.js';
 import { SendTx } from '../SendTx.js';
 import { commitmentArrToSet, GeneralSet } from '../../utils/GeneralSet.js';
 import { StoreTx } from '../StoreTx.js';
-import { FeeUtils } from '../../paramManagers/fee/FeeUtils.js';
+import { FeeUtils, getMinimumAmount } from '../../paramManagers/fee/FeeUtils.js';
 import { SeedWrapper } from '../../clientCrypto/SeedWrapper.js';
 import { stringToUtf8ByteCodes } from '../../utils/stringUtils.js';
 import { RVKWrapper } from '../../clientCrypto/RVKWrapper.js';
@@ -238,7 +238,7 @@ export class TransactionBuilding {
         warden: PublicKey,
         seedWrapper: SeedWrapper,
     ): Pair<StoreTx, Fee> {
-        const tokenAccRentTokenType = FeeUtils.lamportsToToken(Number(tokenAccRentLamports), lamportsPerToken);
+        const tokenAccRentTokenType = FeeUtils.lamportFeeAmountToTokenFeeAmount(Number(tokenAccRentLamports), tokenType, lamportsPerToken);
         if (!this.isValidAmount(Number(amount), tokenType, tokenAccRentTokenType)) throw new Error(`Invalid token amount. Ensure you are sending at least the rent for a token account and less than the maximum amount. ${amount} ${tokenType}`);
         const nonce = lastNonce + 1;
         const identifier = seedWrapper.getRootViewingKeyWrapper().getIdentifierKey(nonce);
@@ -307,7 +307,7 @@ export class TransactionBuilding {
         if (memoBytes && memoBytes.length > 128) {
             throw new Error(TOO_LARGE_SIZE('memo', memoBytes.length, 128));
         }
-        const tokenAccRentTokenType = FeeUtils.lamportsToToken(Number(tokenAccRentLamports), lamportsPerToken);
+        const tokenAccRentTokenType = FeeUtils.lamportFeeAmountToTokenFeeAmount(Number(tokenAccRentLamports), tokenType, lamportsPerToken);
         // Minimum amount is the rent for a token acc, except for merges
         if (!isMerge && !this.isGreaterThanMinAmount(Number(amount), tokenType, tokenAccRentTokenType)) throw new Error('Invalid token amount. Ensure you are sending at least the rent for a token account.');
 
@@ -451,16 +451,10 @@ export class TransactionBuilding {
     }
 
     private static isValidAmount(amount: number, tokenType: TokenType, accountRentFee: number): boolean {
-        const tokenInfo = getTokenInfo(tokenType);
-        return amount > accountRentFee && amount > tokenInfo.min && amount < tokenInfo.max;
+        return this.isGreaterThanMinAmount(amount, tokenType, accountRentFee) && amount < getTokenInfo(tokenType).max;
     }
 
     private static isGreaterThanMinAmount(amount: number, tokenType: TokenType, accountRentFee: number): boolean {
-        const tokenInfo = getTokenInfo(tokenType);
-        return amount > accountRentFee && amount > tokenInfo.min;
-    }
-
-    private static isLessThanMaxAmount(amount: number, tokenType: TokenType): boolean {
-        return amount < getTokenInfo(tokenType).max;
+        return amount > getMinimumAmount(tokenType, accountRentFee);
     }
 }
