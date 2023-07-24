@@ -87,10 +87,9 @@ export class WardenCommunicator {
         return fetchWrapper(this.wardenInfo.url, {
             method: 'POST',
             body: JSON.stringify(postData),
-            headers: [
-                ['referrer', 'localhost:9696'],
-                ['Content-Type', 'application/json'],
-            ],
+            headers: {
+                'Content-Type': 'application/json',
+            },
         });
     }
 }
