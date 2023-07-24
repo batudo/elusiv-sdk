@@ -106,9 +106,8 @@ export class FeeUtils {
  * @param tokenAccRentLamports The rent-exempt amount in lamports needed for a token account
  * @returns The minimum amount of tokens of said tokentype we can send/topup with Elusiv
  */
-export function getMinimumAmount(tokenType: TokenType, tokenAccRentInTokenType: number): number {
+export function getMinimumAmount(tokenType: TokenType, lamportsPerToken: number, tokenAccRentInLamports: number): number {
+    const minRent = FeeUtils.lamportFeeAmountToTokenFeeAmount(tokenAccRentInLamports, tokenType, lamportsPerToken);
     // No buffer for lamports
-    const buffer = tokenType === 'LAMPORTS' ? 1 : FEE_BUFFER_MULTIPLIER;
-    const min = Math.ceil(tokenAccRentInTokenType * buffer);
-    return Math.max(getTokenInfo(tokenType).min, min);
+    return Math.max(getTokenInfo(tokenType).min, minRent);
 }
