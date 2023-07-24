@@ -309,7 +309,7 @@ export class TransactionBuilding {
         }
         const tokenAccRentTokenType = FeeUtils.lamportFeeAmountToTokenFeeAmount(Number(tokenAccRentLamports), tokenType, lamportsPerToken);
         // Minimum amount is the rent for a token acc, except for merges
-        if (!isMerge && !this.isGreaterThanMinAmount(Number(amount), tokenType, tokenAccRentTokenType)) throw new Error('Invalid token amount. Ensure you are sending at least the rent for a token account.');
+        if (!isMerge && !this.isGEqMinAmount(Number(amount), tokenType, tokenAccRentTokenType)) throw new Error('Invalid token amount. Ensure you are sending at least the rent for a token account.');
 
         const nonce = lastUsedNonce + 1;
         // Pubkey is in BE, but we want LE for everything
@@ -451,10 +451,10 @@ export class TransactionBuilding {
     }
 
     private static isValidAmount(amount: number, tokenType: TokenType, accountRentFee: number): boolean {
-        return this.isGreaterThanMinAmount(amount, tokenType, accountRentFee) && amount < getTokenInfo(tokenType).max;
+        return this.isGEqMinAmount(amount, tokenType, accountRentFee) && amount < getTokenInfo(tokenType).max;
     }
 
-    private static isGreaterThanMinAmount(amount: number, tokenType: TokenType, accountRentFee: number): boolean {
-        return amount > getMinimumAmount(tokenType, accountRentFee);
+    private static isGEqMinAmount(amount: number, tokenType: TokenType, accountRentFee: number): boolean {
+        return amount >= getMinimumAmount(tokenType, accountRentFee);
     }
 }
