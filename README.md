@@ -1,6 +1,7 @@
 <div align="center">
     <img src="https://github.com/elusiv-privacy/.github/blob/main/profile/elusiv-banner.png" width="100%"/>
     <p>
+        <a href="https://npmjs.org/package/@elusiv/sdk"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40elusiv%2Fsdk?color=green" /></a>
         <a href="https://elusiv-privacy.github.io/elusiv-sdk/"><img alt="Docs" src="https://img.shields.io/badge/docs-typedoc-blueviolet" /></a>
     </p>
 </div>
