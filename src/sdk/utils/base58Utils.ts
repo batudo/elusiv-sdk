@@ -1,11 +1,9 @@
-import pkg from 'bs58';
-
-const { encode, decode } = pkg;
+import bs58 from 'bs58';
 
 export function bytesToBs58(bytes: Uint8Array): string {
-    return encode(bytes);
+    return bs58.encode(bytes);
 }
 
 export function bs58ToBytes(str: string): Uint8Array {
-    return decode(str);
+    return bs58.decode(str);
 }
