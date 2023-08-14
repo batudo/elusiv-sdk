@@ -1,8 +1,6 @@
 import aesjs from 'aes-js';
 import { generateSeededSaltedAES256Key, generateSeededSaltedIV } from './keyDerivation.js';
 
-const { ModeOfOperation, Counter } = aesjs;
-
 export type EncryptedValue = {
     cipherText: Uint8Array;
     iv: Uint8Array;
@@ -23,12 +21,12 @@ export function decryptSeededSaltedAES256(toDecrypt: EncryptedValue, rootViewing
 
 export function encryptAES256CTRWithKey(toEncrypt: Uint8Array, iv: Uint8Array, key: Uint8Array): Promise<EncryptedValue> {
     // eslint-disable-next-line new-cap
-    const aesCtr = new ModeOfOperation.ctr(key, new Counter(iv));
+    const aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(iv));
     return Promise.resolve({ cipherText: aesCtr.encrypt(toEncrypt), iv });
 }
 
 export function decryptAES256CTRWithKey(toDecrypt: EncryptedValue, key: Uint8Array): Promise<Uint8Array> {
     // eslint-disable-next-line new-cap
-    const aesCtr = new ModeOfOperation.ctr(key, new Counter(toDecrypt.iv));
+    const aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(toDecrypt.iv));
     return Promise.resolve(aesCtr.decrypt(toDecrypt.cipherText));
 }
