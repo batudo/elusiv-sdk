@@ -190,11 +190,10 @@ export class ElusivViewer {
      * @param timeSec The number of seconds in the past to look at
      * @param tokenType Type of token to fetch volume for
      * @param msBetweenBatches The number of milliseconds to sleep between batches of transactions. This is to avoid spamming the RPC. Defaults to 0.
-     * @param msWithinBatch The number of milliseconds to sleep between each transaction in a batch. This is to avoid spamming the RPC. Defaults to 0.
+     * @param batchSize The number of transactions to fetch per batch. Defaults to 1000.
      * @returns The volume in the last specified time
      */
-    public static async getVolumeLastTime(cluster: Cluster, conn: Connection, timeSec: number, tokenType: TokenType, msBetweenBatches = 0, msWithinBatch = 0): Promise<number> {
-        const batchSize = 1000;
+    public static async getVolumeLastTime(cluster: Cluster, conn: Connection, timeSec: number, tokenType: TokenType, msBetweenBatches = 0, batchSize = 1000): Promise<number> {
         const sigs = await ElusivViewer.getElusivSigsLastTime(cluster, conn, timeSec, msBetweenBatches, tokenType);
 
         const config: GetVersionedTransactionConfig = { commitment: 'finalized', maxSupportedTransactionVersion: 0 };
@@ -203,13 +202,7 @@ export class ElusivViewer {
         for (let i = 0; i < sigs.length; i += batchSize) {
             const batch = sigs.slice(i, i + batchSize);
             // eslint-disable-next-line no-await-in-loop
-            const txs = [];
-            for (const sig of batch) {
-                // eslint-disable-next-line no-await-in-loop
-                txs.push(await conn.getParsedTransaction(sig.signature, config));
-                // eslint-disable-next-line no-await-in-loop
-                await sleep(msWithinBatch);
-            }
+            const txs = await conn.getParsedTransactions(batch.map((sig) => sig.signature), config);
             totalTxs.push(...txs);
             // eslint-disable-next-line no-await-in-loop
             await sleep(msBetweenBatches);
