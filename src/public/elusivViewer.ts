@@ -190,10 +190,10 @@ export class ElusivViewer {
      * @param timeSec The number of seconds in the past to look at
      * @param tokenType Type of token to fetch volume for
      * @param msBetweenBatches The number of milliseconds to sleep between batches of transactions. This is to avoid spamming the RPC. Defaults to 0.
+     * @param batchSize The number of transactions to fetch per batch. Defaults to 1000.
      * @returns The volume in the last specified time
      */
-    public static async getVolumeLastTime(cluster: Cluster, conn: Connection, timeSec: number, tokenType: TokenType, msBetweenBatches = 0): Promise<number> {
-        const batchSize = 1000;
+    public static async getVolumeLastTime(cluster: Cluster, conn: Connection, timeSec: number, tokenType: TokenType, msBetweenBatches = 0, batchSize = 1000): Promise<number> {
         const sigs = await ElusivViewer.getElusivSigsLastTime(cluster, conn, timeSec, msBetweenBatches, tokenType);
 
         const config: GetVersionedTransactionConfig = { commitment: 'finalized', maxSupportedTransactionVersion: 0 };
