@@ -12,7 +12,7 @@ import {
     bigIntToNumber,
     bigIntToUint8ArrLE, padLE, serializeUintLE, TOO_LARGE_SIZE, zeros,
 } from '@elusiv/serialization';
-import { Fee, getComputationFeeTotal } from '../../../../public/Fee.js';
+import { getComputationFeeTotal } from '../../../../public/Fee.js';
 import { bs58ToBytes, bytesToBs58 } from '../../../utils/base58Utils.js';
 import { utf8ByteCodesToString } from '../../../utils/stringUtils.js';
 import { JoinSplitSerializedJSON } from '../serializedTypes/borshTypes/JoinSplitBorsh.js';
@@ -25,6 +25,7 @@ import {
     TxHeaderSerialized, TxInstructionSerialized, TxMessageSerialized, RawG1A, RawG2A, RawProof, SendJSON, SendProofSerialized, SignatureSerialized, StoreJSON, U256Serialized, CommitmentMetadataSerialized,
 } from '../serializedTypes/types.js';
 import { buildWardenRequest } from './utils.js';
+import { Fee } from '../../../../public/types.js';
 
 export class TransactionSerialization {
     public static serializeSend(proof: SendQuadraProof, fee: Fee, isSolanaPayTransfer: boolean): SendJSON {

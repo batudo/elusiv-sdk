@@ -1,6 +1,5 @@
 import { PublicKey } from '@solana/web3.js';
 import { TokenType } from './tokenTypes/TokenType';
-import { OptionalFee } from './Fee';
 
 /**
  * @typedef {Object} FeeCalcInfo - Information needed to calculate the fee for an elusiv transaction
@@ -10,6 +9,58 @@ import { OptionalFee } from './Fee';
 export type FeeCalcInfo = {
     amount: number,
     tokenType: TokenType,
+}
+
+/**
+ * An optional additional fee integrators can specify to be
+ * deducted from the user's private balance when sending.
+ * NOTE: Currently this only supports paying the fee in the same
+ * TokenType as the send.
+ */
+export type OptionalFee = {
+    /**
+     * The account with which to receive the extra fee.
+     * This must be the owner account (not the ATA / a TA) and must
+     * have an initialized ATA of the TokenType with which the fee will be paid.
+     */
+    collector: PublicKey,
+    amount: bigint,
+}
+
+/**
+ * Fee without an extra fee specified.
+ */
+export type BasicFee = {
+    /**
+     *  The token type in which the fee is provided
+     */
+    readonly tokenType: TokenType;
+    /**
+     *  The fee that we pay to Solana for computation, rent etc. in the above tokentype
+     */
+    readonly txFee: number;
+    /**
+     *  The fee that we pay to the Elusiv Network in the above tokentype
+     */
+    readonly privacyFee: number;
+
+    /**
+     * The amount of rent required for newly creating the recipients Solana token account
+     * (in case they don't have one yet).
+    */
+    readonly tokenAccRent: number;
+    /**
+     *  The rate at which the fee will be APPROXIMATELY paid. Remember, we're dealing with the smallest denomination of each token here
+     *  e.g. 1_000_000 "USDC" = 1$
+     */
+    readonly lamportsPerToken?: number;
+}
+
+export type Fee = BasicFee & {
+    /**
+     * Fee that was paid to a third party on top of the normal fee
+     */
+    readonly extraFee: number;
 }
 
 /**

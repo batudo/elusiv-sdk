@@ -15,7 +15,7 @@ import { WardenInfo } from '../../../public/WardenInfo.js';
 import { TopupTxData } from '../../../public/txData/TopupTxData.js';
 import { Pair } from '../../utils/Pair.js';
 import {
-    Fee, getComputationFeeTotal, getTotalFeeAmount, OptionalFee,
+    getComputationFeeTotal, getTotalFeeAmount,
 } from '../../../public/Fee.js';
 import {
     INVALID_TX_DATA, MERGE_NEEDED, SEND_ARITY, TOO_LARGE_SIZE, TOO_SMALL_SIZE,
@@ -36,6 +36,7 @@ import { FeeVersionData } from '../../paramManagers/fee/FeeManager.js';
 import { CommitmentMetadata } from '../../clientCrypto/CommitmentMetadata.js';
 import { CommitmentManager } from '../../paramManagers/CommitmentManager.js';
 import { TokenType } from '../../../public/tokenTypes/TokenType.js';
+import { Fee, OptionalFee } from '../../../public/types.js';
 
 export type TokenAcc = {
     owner: PublicKey,

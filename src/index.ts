@@ -1,7 +1,9 @@
 export {
-    Fee, getTotalFeeAmount, getComputationFeeTotal, OptionalFee, BasicFee,
+    getTotalFeeAmount, getComputationFeeTotal,
 } from './public/Fee.js';
-export { FeeCalcInfo, TopupFeeCalcInfo, SendFeeCalcInfo } from './public/types.js';
+export {
+    FeeCalcInfo, TopupFeeCalcInfo, SendFeeCalcInfo, Fee, OptionalFee, BasicFee,
+} from './public/types.js';
 export { SharedTxData as BaseTxData } from './public/txData/SharedTxData.js';
 export { ElusivTxData } from './public/txData/ElusivTxData.js';
 export { SendTxData } from './public/txData/SendTxData.js';

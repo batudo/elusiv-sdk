@@ -9,7 +9,7 @@ import { ElusivTransaction } from './ElusivTransaction.js';
 import { GeneralSet } from '../utils/GeneralSet.js';
 import { EncryptedValue } from '../clientCrypto/encryption.js';
 import { CommitmentMetadata } from '../clientCrypto/CommitmentMetadata.js';
-import { OptionalFee } from '../../public/Fee.js';
+import { OptionalFee } from '../../public/types.js';
 
 /*
 Finalize Tx Format ("RequestProofVerification" in the elusiv program)

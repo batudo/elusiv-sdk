@@ -9,10 +9,10 @@ import {
     BASE_TX_PER_HASH,
     MAX_BATCHING_RATE, MAX_CUS, MERKLE_TREE_HEIGHT, TOO_LARGE_SIZE,
 } from '../../../constants.js';
-import { Fee } from '../../../public/Fee.js';
 import { FeeAccBorsh } from '../../transactions/txBuilding/serializedTypes/borshTypes/accounts/FeeAccBorsh.js';
 import { divCeilBigInt } from '../../utils/bigIntUtils.js';
 import { repeatChar } from '../../utils/stringUtils.js';
+import { Fee } from '../../../public/types.js';
 
 // Class used for calculating the fees of Send and Store transactions.
 // The reason this is one big class instead of a super class for shared methods and
