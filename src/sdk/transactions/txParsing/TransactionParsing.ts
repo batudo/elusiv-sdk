@@ -11,7 +11,7 @@ import { RVKWrapper } from '../../clientCrypto/RVKWrapper.js';
 import { StoreInstructionBase } from '../instructions/StoreInstructionBase.js';
 import { InitVerificationInstructionBase } from '../instructions/InitVerificationInstructionBase.js';
 import { isCommitmentMetadata, isInitVerificationInstruction, isPartiallyDecodedInstruction } from '../txBuilding/serializedTypes/typeGuards.js';
-import { OptionalFee } from '../../../public/Fee.js';
+import { OptionalFee } from '../../../public/types.js';
 
 export class TransactionParsing {
     public static async tryParseRawStore(

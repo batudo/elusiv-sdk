@@ -1,8 +1,9 @@
 import { ReprScalar } from '@elusiv/cryptojs';
-import { Fee, getTotalFeeAmount } from '../Fee.js';
+import { getTotalFeeAmount } from '../Fee.js';
 import { TxTypes } from '../TxTypes.js';
 import { WardenInfo } from '../WardenInfo.js';
 import { TokenType } from '../tokenTypes/TokenType.js';
+import { Fee } from '../types.js';
 
 /**
  * Data that is shared by all Elusiv Private Tx Types

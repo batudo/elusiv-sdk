@@ -1,9 +1,9 @@
 import { SendQuadraProof } from 'elusiv-circuits';
 import { ReprScalar } from '@elusiv/cryptojs';
-import { Fee, OptionalFee } from '../Fee.js';
 import { WardenInfo } from '../WardenInfo.js';
 import { SharedTxData } from './SharedTxData.js';
 import { TokenType } from '../tokenTypes/TokenType.js';
+import { Fee, OptionalFee } from '../types.js';
 
 /**
  * Data used for encoding a send tx

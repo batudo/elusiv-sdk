@@ -23,16 +23,16 @@ import { TransactionBuilding } from '../sdk/transactions/txBuilding/TransactionB
 import { SeedWrapper } from '../sdk/clientCrypto/SeedWrapper.js';
 import { tokenAccExists } from '../sdk/utils/pubKeyUtils.js';
 import { generateViewingKey, ViewingKey } from '../compliance/ViewingKey.js';
-import {
-    addFees, Fee, getTotalFeeAmount, OptionalFee,
-} from './Fee.js';
+import { addFees, getTotalFeeAmount } from './Fee.js';
 import { FeeCalculator } from '../sdk/paramManagers/fee/FeeCalculator.js';
 import { FeeUtils } from '../sdk/paramManagers/fee/FeeUtils.js';
 import { ElusivViewer } from './elusivViewer.js';
 import { isTypeError } from '../sdk/transactions/txBuilding/serializedTypes/typeGuards.js';
 import { cleanUserInput, sleep } from '../sdk/utils/utils.js';
 import { ElusivTransaction } from '../sdk/transactions/ElusivTransaction.js';
-import { SendFeeCalcInfo, TopupFeeCalcInfo } from './types.js';
+import {
+    Fee, OptionalFee, SendFeeCalcInfo, TopupFeeCalcInfo,
+} from './types.js';
 import { TxTypes } from './TxTypes.js';
 import { TokenType } from './tokenTypes/TokenType.js';
 
