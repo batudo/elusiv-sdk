@@ -1,8 +1,7 @@
 import { AbstractType, Constructor, deserialize } from '@dao-xyz/borsh';
-import { Cluster, Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { serializeUint32LE } from '@elusiv/serialization';
 import { COULD_NOT_FIND_ACCOUNT } from '../../constants.js';
-import { getElusivProgramId } from '../../public/WardenInfo.js';
 import { stringToUtf8ByteCodes } from '../utils/stringUtils.js';
 
 // FOr all PDAs: ignore first 3 bytes
@@ -21,8 +20,8 @@ export abstract class AccountReader {
         this.connection = connection;
     }
 
-    protected async getProgramInfoFromSeeds<T>(classType: Constructor<T> | AbstractType<T>, cluster: Cluster, pdaSeeds: string[]): Promise<T> {
-        const readingAccKey = AccountReader.generateElusivPDAFrom(pdaSeeds, getElusivProgramId(cluster))[0];
+    protected async getProgramInfoFromSeeds<T>(classType: Constructor<T> | AbstractType<T>, elusivProgram: PublicKey, pdaSeeds: string[]): Promise<T> {
+        const readingAccKey = AccountReader.generateElusivPDAFrom(pdaSeeds, elusivProgram)[0];
         return this.getProgramInfo(classType, readingAccKey);
     }
 

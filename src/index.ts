@@ -16,8 +16,10 @@ export {
 } from './public/transactionWrappers/TxWrappers.js';
 export { TokenType, TokenTypeArr } from './public/tokenTypes/TokenType.js';
 export {
-    airdropToken, getMintAccount, getTokenInfo, TokenInfo, getNumberFromTokenType, getTokenTypeFromNumber,
+    getMintAccount, getTokenInfo, getNumberFromTokenType, getTokenTypeFromNumber,
 } from './public/tokenTypes/TokenTypeFuncs.js';
+export { airdropToken } from './public/tokenTypes/Airdrop.js';
+export { TokenInfo } from './public/tokenTypes/TokenType.js';
 export { TxTypes } from './public/TxTypes.js';
 export { TransactionStatus } from './public/TransactionStatus.js';
 export { getSendTxWithViewingKey, ViewingKey } from './compliance/ViewingKey';

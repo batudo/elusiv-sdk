@@ -1,35 +1,8 @@
-import { Cluster, ConfirmedSignatureInfo, PublicKey } from '@solana/web3.js';
+import { Cluster, PublicKey } from '@solana/web3.js';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
-import { TokenType, TokenTypeArr } from './TokenType.js';
+import { TokenInfo, TokenType, TokenTypeArr } from './TokenType.js';
 import { INVALID_TOKEN_TYPE } from '../../constants.js';
-import { buildWardenRequest } from '../../sdk/transactions/txBuilding/wardenSerialization/utils.js';
-import { getDefaultWarden, WardenInfo } from '../WardenInfo.js';
-import { AirdropParams } from '../../sdk/transactions/txBuilding/serializedTypes/types.js';
-import { TransactionSerialization } from '../../sdk/transactions/txBuilding/wardenSerialization/TransactionSerialization.js';
-import { WardenCommunicator } from '../../sdk/txSending/WardenCommunication.js';
 import { tokenInfos } from './Token.js';
-
-/**
- * Type representing all relevant info for a specific token type
- */
-export type TokenInfo = {
-    symbol: TokenType,
-    mintMainnet: PublicKey,
-    mintDevnet: PublicKey,
-    active: boolean,
-    decimals: number,
-    /**
-     * Min amount we can send on Elusiv (given in the smallest unit of the token)
-     */
-    min: number,
-    /**
-     * Max amount we can send on Elusiv (given in the smallest unit of the token)
-     */
-    max: number,
-    denomination: number,
-    pythUSDPriceMainnet: PublicKey,
-    pythUSDPriceDevnet: PublicKey,
-}
 
 /**
  * Gets the TokenInfo of a token type
@@ -63,28 +36,6 @@ export function getMintAccount(tokenType: TokenType, cluster: Cluster): PublicKe
         case 'mainnet-beta': return tokenInfo.mintMainnet;
         default: throw new Error('Unknown Cluster');
     }
-}
-
-/**
- *
- * @param tokenType The token type to airdrop.
- * @param amount The amount to airdrop.
- * @param recipientTA The recipient of the airdrop's token account. Use the getMintAccount method to help you create this.
- * @param cluster The cluster on which to get the mint (mainnet is not valid)
- * @param wardenInfo Controls what warden is used. Filled in with default config.
- * @returns A signature indicating the airdrop transaction on success. Throws on failure.
- */
-export async function airdropToken(tokenType: TokenType, amount: number, recipientTA: PublicKey, cluster: Cluster = 'devnet', wardenInfo: WardenInfo = getDefaultWarden(cluster)): Promise<ConfirmedSignatureInfo> {
-    if (cluster !== 'devnet' && cluster !== 'testnet') throw new Error('Airdrop only available on devnet and testnet');
-    const params: AirdropParams = [
-        tokenType,
-        amount,
-        TransactionSerialization.serializeU256Bytes(recipientTA.toBytes()),
-    ];
-    const request = buildWardenRequest('airdrop', params);
-
-    const communicator = new WardenCommunicator(wardenInfo);
-    return communicator.postWardenSigRequest(request).then((res) => TransactionSerialization.deserializeSerializedSignature(res.result));
 }
 
 export function getDenomination(t: TokenType): number {

@@ -23,6 +23,7 @@ import {
 } from '../utils/utils.js';
 import { AccountReader } from './AccountReader.js';
 import { TreeChunkAccountReader } from './TreeChunkAccountReader.js';
+import { getElusivProgramId } from '../../public/WardenInfo.js';
 
 export class StorageAccountReader extends AccountReader {
     private cluster: Cluster;
@@ -33,7 +34,7 @@ export class StorageAccountReader extends AccountReader {
     }
 
     public async getData(): Promise<StorageAccBorsh> {
-        return super.getProgramInfoFromSeeds(StorageAccBorsh, this.cluster, [STORAGE_ACC_SEED]);
+        return super.getProgramInfoFromSeeds(StorageAccBorsh, getElusivProgramId(this.cluster), [STORAGE_ACC_SEED]);
     }
 
     public async getCurrentPointer(

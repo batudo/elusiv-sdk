@@ -1,9 +1,9 @@
 import { PublicKey } from '@solana/web3.js';
-import { getTokenTypeFromStr, TokenInfo } from './TokenTypeFuncs.js';
+import { TokenInfo } from './TokenType';
 // Index of a token is how its tokentype is serialized e.g. lamports is at index 0, so it's serialied to 0
 export const tokenInfos: TokenInfo[] = [
     {
-        symbol: getTokenTypeFromStr('LAMPORTS'),
+        symbol: 'LAMPORTS',
         mintMainnet: new PublicKey('11111111111111111111111111111111'),
         mintDevnet: new PublicKey('11111111111111111111111111111111'),
         active: true,
@@ -15,7 +15,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix'),
     },
     {
-        symbol: getTokenTypeFromStr('USDC'),
+        symbol: 'USDC',
         mintMainnet: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
         mintDevnet: new PublicKey('F3hocsFVHrdTBG2yEHwnJHAJo4rZfnSwPg8d5nVMNKYE'),
         active: true,
@@ -27,7 +27,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7'),
     },
     {
-        symbol: getTokenTypeFromStr('USDT'),
+        symbol: 'USDT',
         mintMainnet: new PublicKey('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'),
         mintDevnet: new PublicKey('AyPeYKj4oHBGdhLjMwbj9m8tEdS1gr9tyqkpT3oDEZUV'),
         active: true,
@@ -39,7 +39,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('38xoQ4oeJCBrcVvca2cGk7iV1dAfrmTR1kmhSCJQ8Jto'),
     },
     {
-        symbol: getTokenTypeFromStr('mSOL'),
+        symbol: 'mSOL',
         mintMainnet: new PublicKey('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'),
         mintDevnet: new PublicKey('4EnmvnhxdmMrHQeHXh5tRnhCCUJpdCjmWjrnJPr3YNzi'),
         active: true,
@@ -51,7 +51,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('9a6RNx3tCu1TSs6TBSfV2XRXEPEZXQ6WB7jRojZRvyeZ'),
     },
     {
-        symbol: getTokenTypeFromStr('BONK'),
+        symbol: 'BONK',
         mintMainnet: new PublicKey('DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'),
         mintDevnet: new PublicKey('5B2TabGvtPgV67jnyEhhSrFvTTBv4awdrPg2qxNashhm'),
         active: true,
@@ -63,7 +63,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('6bquU99ktV1VRiHDr8gMhDFt3kMfhCQo5nfNrg2Urvsn'),
     },
     {
-        symbol: getTokenTypeFromStr('SAMO'),
+        symbol: 'SAMO',
         mintMainnet: new PublicKey('7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU'),
         mintDevnet: new PublicKey('QcvLaJJPXCTmcBsif9DxivbHQLqqjUgcXU1F97sKoPJ'),
         active: true,
@@ -75,7 +75,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('G7dySNGaxZ8y2E89aX1K6rFeBt2ZnYBqXuCu1k2Y9MEe'),
     },
     {
-        symbol: getTokenTypeFromStr('stSOL'),
+        symbol: 'stSOL',
         mintMainnet: new PublicKey('7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj'),
         mintDevnet: new PublicKey('GbPqCRvpc3Ute2Ga5yxSZhmBjguJmzzjHWu5a7qzYjFW'),
         active: true,
@@ -87,7 +87,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('2LwhbcswZekofMNRtDRMukZJNSRUiKYMFbqtBwqjDfke'),
     },
     {
-        symbol: getTokenTypeFromStr('ORCA'),
+        symbol: 'ORCA',
         mintMainnet: new PublicKey('orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE'),
         mintDevnet: new PublicKey('4TFR2cNVufTTqJodYBNK4dVJLmBChUDCNhRHQPwL1aeL'),
         active: true,
@@ -99,7 +99,7 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceDevnet: new PublicKey('A1WttWF7X3Rg6ZRpB2YQUFHCRh1kiXV8sKKLV3S9neJV'),
     },
     {
-        symbol: getTokenTypeFromStr('RAY'),
+        symbol: 'RAY',
         mintMainnet: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'),
         mintDevnet: new PublicKey('Fe6W1j4c7Vtht3neoNJLsGpcM7NaBseWbHDppiQupqDi'),
         active: true,
