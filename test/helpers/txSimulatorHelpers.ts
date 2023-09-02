@@ -18,7 +18,7 @@ import { TransactionBuilding } from '../../src/sdk/transactions/txBuilding/Trans
 import { Pair } from '../../src/sdk/utils/Pair.js';
 import { FeeCalculatorDriver } from './drivers/FeeCalculatorDriver.js';
 import { getElusivProgramId } from '../../src/public/WardenInfo.js';
-import { Fee, OptionalFee } from '../../src/public/Fee.js';
+import { Fee, OptionalFee } from '../../src/public/types.js';
 import { CommitmentMetadata } from '../../src/sdk/clientCrypto/CommitmentMetadata.js';
 import { getTokenInfo } from '../../src/public/tokenTypes/TokenTypeFuncs.js';
 import { seededRandomUNSAFE } from '../utils.js';
