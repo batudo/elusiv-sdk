@@ -11,7 +11,8 @@ import chaiAsPromised from 'chai-as-promised';
 import { getSendQuadraProofParamsStatic } from 'elusiv-circuits';
 import { TopupTxData } from '../../../src/public/txData/TopupTxData';
 import { SendTxData } from '../../../src/public/txData/SendTxData';
-import { Fee, getTotalFeeAmount } from '../../../src/public/Fee';
+import { getTotalFeeAmount } from '../../../src/public/Fee';
+import { Fee } from '../../../src/public/types.js';
 import { WardenInfo } from '../../../src/public/WardenInfo';
 import { SeedWrapper } from '../../../src/sdk/clientCrypto/SeedWrapper.js';
 import {

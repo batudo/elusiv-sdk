@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import {
-    addFees,
-    Fee, getTotalFeeAmount, getTotalFeeAmountSol, zeroFee,
+    addFees, getTotalFeeAmount, getTotalFeeAmountSol, zeroFee,
 } from '../../src/public/Fee.js';
+import { Fee } from '../../src/public/types.js';
 
 describe('Fee type tests', () => {
     it('Correctly gets the total fee amount', () => {

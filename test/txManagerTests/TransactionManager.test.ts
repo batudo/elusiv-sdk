@@ -16,7 +16,7 @@ import { TxHistoryConnectionDriver } from '../helpers/drivers/TxHistoryConnectio
 import {
     TxHistoryTx, generateSendTransaction, generateTopupTx, generateTxHistory,
 } from '../helpers/txSimulatorHelpers.js';
-import { Fee } from '../../src/public/Fee';
+import { Fee } from '../../src/public/types.js';
 import { isTruthy } from '../../src/sdk/utils/utils';
 import { TokenType } from '../../src/public/tokenTypes/TokenType';
 import { FeeCalculatorDriver } from '../helpers/drivers/FeeCalculatorDriver';
