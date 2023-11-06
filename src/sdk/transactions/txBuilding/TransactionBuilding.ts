@@ -56,6 +56,7 @@ export class TransactionBuilding {
         seedWrapper: SeedWrapper,
         cluster: Cluster,
         mergeFee: number | undefined,
+        memo?: string,
     ): Promise<TopupTxData> {
         // let mergeTx : Pair<SendTx, Fee> | undefined;
         const activeCommitmentsArr = remoteParams.activeCommitments.toArray();
@@ -93,6 +94,7 @@ export class TransactionBuilding {
             Number(remoteParams.tokenAccRent),
             wardenInfo.pubKey,
             seedWrapper,
+            memo,
         );
 
         const rawTx = await this.buildRawTopupTransaction(
@@ -238,8 +240,10 @@ export class TransactionBuilding {
         tokenAccRentLamports: number,
         warden: PublicKey,
         seedWrapper: SeedWrapper,
+        memo?: string,
     ): Pair<StoreTx, Fee> {
         if (!this.isValidAmount(Number(amount), tokenType, lamportsPerToken, tokenAccRentLamports)) throw new Error(`Invalid token amount. Ensure you are sending at least the rent for a token account and less than the maximum amount. ${amount} ${tokenType}`);
+        if (memo && memo.length >= 256) throw new Error(`Memo is too long. Ensure it is less than 256 characters. ${memo.length} characters`);
         const nonce = lastNonce + 1;
         const identifier = seedWrapper.getRootViewingKeyWrapper().getIdentifierKey(nonce);
         const storeFee = this.generateTopupFee(feeCalculator, tokenType, amount, lamportsPerToken);
@@ -259,6 +263,7 @@ export class TransactionBuilding {
             identifier,
             warden,
             fee: BigInt(getTotalFeeAmount(storeFee)),
+            memo,
         };
 
         return { fst: tx, snd: storeFee };

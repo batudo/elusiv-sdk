@@ -137,6 +137,7 @@ export class Elusiv extends ElusivViewer {
         manualMerge = false,
         wardenInfo: WardenInfo = getDefaultWarden(this.cluster),
         sender = this.ownerKey,
+        memo: string | undefined = undefined,
     ): Promise<TopupTxData> {
         const sanitizedAmount = cleanUserInput(amount);
 
@@ -182,6 +183,7 @@ export class Elusiv extends ElusivViewer {
             this.seedWrapper,
             this.cluster,
             mergeTxData?.getTotalFeeAmount(),
+            memo,
         );
     }
 
