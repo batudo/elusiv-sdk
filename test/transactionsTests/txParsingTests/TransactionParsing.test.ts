@@ -63,6 +63,10 @@ describe('Topup Transaction parsing tests', () => {
         4,
         MAX_UINT32,
     ];
+    const memo = [
+        true,
+        false,
+    ];
     const fees = [
         BigInt(0),
         MAX_UINT64,
@@ -85,7 +89,7 @@ describe('Topup Transaction parsing tests', () => {
         await Poseidon.setupPoseidon();
     });
 
-    fees.forEach((fee) => nonces.forEach((nonce) => tokenTypes.forEach((tokenType) => senders.forEach((sender) => isRecipients.forEach((isRecipient) => feeVersionDatas.forEach((feeVersionData) => balances.forEach((balance) => merkleStartIndexs.forEach((merkleStartIndex) => hashAccIndexs.forEach((hashAccIndex) => {
+    memo.forEach((useMemo) => fees.forEach((fee) => nonces.forEach((nonce) => tokenTypes.forEach((tokenType) => senders.forEach((sender) => isRecipients.forEach((isRecipient) => feeVersionDatas.forEach((feeVersionData) => balances.forEach((balance) => merkleStartIndexs.forEach((merkleStartIndex) => hashAccIndexs.forEach((hashAccIndex) => {
         describe(`Tests with nonce ${nonce} and tokentype ${tokenType}, isRecipient ${isRecipient} and balance ${balance} and merkleStartIndex ${merkleStartIndex} and hashAccIndex ${hashAccIndex} and sender ${sender.toBase58()}`, () => {
             let seedWrapper: SeedWrapper;
             beforeEach(async () => {
@@ -114,6 +118,7 @@ describe('Topup Transaction parsing tests', () => {
                     identifier: seedWrapper.getRootViewingKeyWrapper().getIdentifierKey(nonce),
                     warden,
                     fee,
+                    memo: useMemo ? 'memo' : undefined,
                 };
 
                 const rawTopup = await TransactionBuilding['buildRawTopupTransaction'](
@@ -210,9 +215,10 @@ describe('Topup Transaction parsing tests', () => {
                 expect(parsedTx.merkleStartIndex).to.equal(topupTx.merkleStartIndex);
                 expect(parsedTx.isRecipient).to.equal(topupTx.isRecipient);
                 expect(parsedTx.hashAccIndex).to.equal(topupTx.hashAccIndex);
+                expect(parsedTx.memo).to.equal(topupTx.memo);
             });
         });
-    })))))))));
+    }))))))))));
 
     it('Should throw for invalid topup', () => {
         // Random filler instructions to get it to the correct length
@@ -660,7 +666,6 @@ describe('Send Transaction parsing tests', async () => {
                     err: null,
                     memo: null,
                 };
-
                 const finalizeTx = generateSendMessage([
                     serializedFinalize,
                 ], keys);

@@ -149,6 +149,10 @@ describe('Instruction parsing tests', () => {
             0,
             MAX_UINT32,
         ];
+        const memo = [
+            true,
+            false,
+        ];
         const balances = [
             BigInt(0),
             MAX_UINT64,
@@ -173,7 +177,7 @@ describe('Instruction parsing tests', () => {
             await Poseidon.setupPoseidon();
         });
 
-        nonces.forEach((nonce) => tokenTypes.forEach((tokenType) => senders.forEach((sender) => isRecipients.forEach((isRecipient) => feeVersionDatas.forEach((feeVersionData) => balances.forEach((balance) => merkleStartIndexs.forEach((merkleStartIndex) => hashAccIndexs.forEach((hashAccIndex) => {
+        memo.forEach((useMemo) => nonces.forEach((nonce) => tokenTypes.forEach((tokenType) => senders.forEach((sender) => isRecipients.forEach((isRecipient) => feeVersionDatas.forEach((feeVersionData) => balances.forEach((balance) => merkleStartIndexs.forEach((merkleStartIndex) => hashAccIndexs.forEach((hashAccIndex) => {
             describe(`Tests with nonce ${nonce} and tokentype ${tokenType}, isRecipient ${isRecipient} and balance ${balance} and merkleStartIndex ${merkleStartIndex} and hashAccIndex ${hashAccIndex} and sender ${sender.toBase58()}`, () => {
                 let seedWrapper: SeedWrapper;
                 before(async () => {
@@ -202,6 +206,7 @@ describe('Instruction parsing tests', () => {
                         identifier: seedWrapper.getRootViewingKeyWrapper().getIdentifierKey(nonce),
                         warden,
                         fee: BigInt(12000),
+                        memo: useMemo ? 'memo' : undefined,
                     };
 
                     const rawTopup = await TransactionBuilding['buildRawTopupTransaction'](
@@ -224,9 +229,11 @@ describe('Instruction parsing tests', () => {
 
                 it('Should correctly get the variable instructions', () => {
                     const variableCompiledIxs = InstructionParsing.getCompiledVariableIxsFromRawStoreIxs(topupIxs);
-                    expect(variableCompiledIxs.length).to.equal(2);
+                    const expectedLength = useMemo ? 3 : 2;
+                    expect(variableCompiledIxs.length).to.equal(expectedLength);
                     expect(variableCompiledIxs[0]).to.deep.equal(topupIxs[2]);
                     expect(variableCompiledIxs[1]).to.deep.equal(topupIxs[3]);
+                    expect(variableCompiledIxs[2]).to.deep.equal(topupIxs[4]);
                 });
 
                 it('Should correctly get the constant instructions', () => {
@@ -239,6 +246,7 @@ describe('Instruction parsing tests', () => {
                 describe('Correctly parses a topup transaction\'s variable instructions', () => {
                     let storeIx: StoreInstruction;
                     let computeIx: ComputeHashInstruction;
+                    let memoParsed: string | undefined;
 
                     before(async () => {
                         topupIxs = topupTxMessage.compiledInstructions.map((ix) => msgCompiledIxToPartiallyDecodedIx(ix, topupTxMessage.staticAccountKeys));
@@ -246,6 +254,7 @@ describe('Instruction parsing tests', () => {
                         const res = await InstructionParsing.tryParseVariableInstructionsStore(variableCompiledIxs, nonce, seedWrapper.getRootViewingKeyWrapper());
                         storeIx = res.storeIx as StoreInstruction;
                         computeIx = res.computeIx;
+                        memoParsed = res.memo;
                     });
 
                     it('Correctly parses balance', () => {
@@ -288,6 +297,11 @@ describe('Instruction parsing tests', () => {
                     it('Correctly parses current private balance', () => {
                         expect(computeIx.currPrivateBalance).to.equal(topupTx.parsedPrivateBalance);
                     });
+
+                    it('Correctly parses memo', () => {
+                        const expectedMemo = useMemo ? 'memo' : undefined;
+                        expect(memoParsed).to.equal(expectedMemo);
+                    });
                 });
 
                 it('Should throw for trying to parse wrong length variable ixs', () => {
@@ -311,25 +325,29 @@ describe('Instruction parsing tests', () => {
 
                 it('Should throw for trying to slice too short length constant ixs', () => {
                     topupIxs.pop();
+                    topupIxs.pop();
                     expect(() => InstructionParsing.getCompiledConstantIxsFromRawStoreIxs(topupIxs)).to.throw();
                 });
 
                 it('Should throw for trying to slice too short length variable ixs', () => {
+                    topupIxs.pop();
                     topupIxs.pop();
                     expect(() => InstructionParsing.getCompiledVariableIxsFromRawStoreIxs(topupIxs)).to.throw();
                 });
 
                 it('Should throw for trying to slice too long length constant ixs', () => {
                     topupIxs.push(topupIxs[0]);
+                    topupIxs.push(topupIxs[0]);
                     expect(() => InstructionParsing.getCompiledConstantIxsFromRawStoreIxs(topupIxs)).to.throw();
                 });
 
                 it('Should throw for trying to slice too long length variable ixs', () => {
                     topupIxs.push(topupIxs[0]);
+                    topupIxs.push(topupIxs[0]);
                     expect(() => InstructionParsing.getCompiledVariableIxsFromRawStoreIxs(topupIxs)).to.throw();
                 });
             });
-        }))))))));
+        })))))))));
     });
 
     describe('CPI parsing tests', () => {
