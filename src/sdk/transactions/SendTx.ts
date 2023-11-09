@@ -35,8 +35,6 @@ export type PartialSendTx = ElusivTransaction & {
     owner?: PublicKey;
     // Optional (solana pay) reference key
     refKey?: PublicKey;
-    // Optional (solana pay) memo
-    memo?: string;
     // The commitments that are used (and invalidated) in this tx. Optional because we don't
     // parse this out when parsing the tx from chain
     inputCommitments?: GeneralSet<Commitment>;

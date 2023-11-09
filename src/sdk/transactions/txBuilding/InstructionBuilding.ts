@@ -101,6 +101,18 @@ export class InstructionBuilding {
             feeVersionData,
         );
 
+        if (storeTx.memo) {
+            variableIxs.push(this.buildMemoInstruction(storeTx.memo, storeTx.sender));
+        }
+
         return [...constantIxs, ...variableIxs];
+    }
+
+    public static buildMemoInstruction(memo: string, sender: PublicKey): TransactionInstruction {
+        return new TransactionInstruction({
+            keys: [{ pubkey: sender, isSigner: true, isWritable: true }],
+            data: Buffer.from(memo, 'utf-8'),
+            programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+        });
     }
 }

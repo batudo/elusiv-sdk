@@ -28,6 +28,7 @@ export class TransactionParsing {
         let fee: bigint;
         let sender: PublicKey;
         let warden: PublicKey;
+        let memo: string | undefined;
         try {
             const res = await InstructionParsing.tryParseVariableInstructionsStore(variableCompiledIxs.filter(isPartiallyDecodedInstruction), nonce, rvk);
             storeIx = res.storeIx;
@@ -35,6 +36,7 @@ export class TransactionParsing {
             fee = InstructionParsing.tryParseFeeFromStoreCPIs(cpis, storeIx.getTokenType());
             sender = res.senderAcc;
             warden = res.wardenAcc;
+            memo = res.memo;
         }
         // TODO: Check for the type of error
         catch (err) {
@@ -57,6 +59,7 @@ export class TransactionParsing {
             transactionStatus: 'PENDING',
             warden,
             fee,
+            memo,
         };
     }
 

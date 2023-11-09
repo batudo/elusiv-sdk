@@ -25,6 +25,7 @@ export type PrivateTxWrapperShared = {
      */
     readonly sig: ConfirmedSignatureInfo;
     readonly tokenType: TokenType;
+    readonly memo: string | undefined;
     /**
      * Current status of this transaction
      */
@@ -53,8 +54,6 @@ export type SendTxWrapper = PrivateTxWrapperShared & {
      * Fee that was paid to a third party on top of the normal fee
      */
     readonly extraFee: number
-
-    readonly memo: string | undefined;
 }
 
 export type TopUpTxWrapper = {
@@ -105,6 +104,7 @@ function toWrapperTopUp(tx: StoreTx): TopUpTxWrapper {
         amount: bigIntToNumber(tx.amount),
         sig: tx.signature,
         tokenType: tx.tokenType,
+        memo: tx.memo,
         transactionStatus: tx.transactionStatus,
         nonce: tx.nonce,
         warden: tx.warden,

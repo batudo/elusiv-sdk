@@ -26,14 +26,15 @@ const STORE_IX_INDEX = 2;
 
 export class InstructionParsing {
     public static getCompiledVariableIxsFromRawStoreIxs<T>(storeIxs: T[]): T[] {
-        if (storeIxs.length !== 4) {
+        // We can have 4 or 5 instructions in a store tx (4 without memo, 5 with)
+        if (storeIxs.length !== 4 && storeIxs.length !== 5) {
             throw new InvalidStoreError(INVALID_SIZE('compiled constant store instructions', storeIxs.length, 4));
         }
-        return storeIxs.slice(STORE_IX_INDEX, 4);
+        return storeIxs.slice(STORE_IX_INDEX);
     }
 
     public static getCompiledConstantIxsFromRawStoreIxs<T>(storeIxs: T[]): T[] {
-        if (storeIxs.length !== 4) throw new InvalidStoreError(INVALID_SIZE('compiled constant store instructions', storeIxs.length, 4));
+        if (storeIxs.length !== 4 && storeIxs.length !== 5) throw new InvalidStoreError(INVALID_SIZE('compiled constant store instructions', storeIxs.length, 4));
         return storeIxs.slice(0, STORE_IX_INDEX);
     }
 
@@ -48,8 +49,9 @@ export class InstructionParsing {
             identifierAcc: PublicKey;
             senderAcc: PublicKey;
             wardenAcc: PublicKey;
+            memo?: string;
         }> {
-        if (ixs.length !== 2) throw new InvalidStoreError(INVALID_SIZE('compiled variable store instructions', ixs.length, 2));
+        if (ixs.length !== 2 && ixs.length !== 3) throw new InvalidStoreError(INVALID_SIZE('compiled variable store instructions', ixs.length, '2 or 3'));
 
         const rawStore = ixs[0];
         const rawCompute = ixs[1];
@@ -69,8 +71,17 @@ export class InstructionParsing {
         const senderAcc = StoreInstruction.getSenderAcc(rawStore);
         const wardenAcc = StoreInstruction.getWardenAcc(rawStore);
 
+        let memo: string | undefined;
+        if (ixs.length === 3) {
+            const memoIx = ixs[2];
+            if (isPartiallyDecodedInstruction(memoIx)) {
+                const memoBytes = bs58ToBytes(memoIx.data);
+                memo = Buffer.from(memoBytes).toString('utf-8');
+            }
+        }
+
         return {
-            storeIx, computeIx, identifierAcc: idAcc, senderAcc, wardenAcc,
+            storeIx, computeIx, identifierAcc: idAcc, senderAcc, wardenAcc, memo,
         };
     }
 

@@ -1,10 +1,10 @@
 import { Cluster, ConfirmedSignatureInfo, PublicKey } from '@solana/web3.js';
 import { TokenType } from './TokenType';
-import { AirdropParams } from '../../sdk/transactions/txBuilding/serializedTypes/types';
-import { TransactionSerialization } from '../../sdk/transactions/txBuilding/wardenSerialization/TransactionSerialization';
-import { buildWardenRequest } from '../../sdk/transactions/txBuilding/wardenSerialization/utils';
-import { WardenCommunicator } from '../../sdk/txSending/WardenCommunication';
-import { WardenInfo, getDefaultWarden } from '../WardenInfo';
+import { AirdropParams } from '../../sdk/transactions/txBuilding/serializedTypes/types.js';
+import { TransactionSerialization } from '../../sdk/transactions/txBuilding/wardenSerialization/TransactionSerialization.js';
+import { buildWardenRequest } from '../../sdk/transactions/txBuilding/wardenSerialization/utils.js';
+import { WardenCommunicator } from '../../sdk/txSending/WardenCommunication.js';
+import { WardenInfo, getDefaultWarden } from '../WardenInfo.js';
 
 /**
  *

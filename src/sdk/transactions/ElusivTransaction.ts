@@ -9,6 +9,8 @@ export type ElusivTransaction = {
     txType: TxTypes;
     tokenType: TokenType;
     identifier: PublicKey;
+    // Optional (solana pay) memo
+    memo?: string;
     // The amount that was topped up/sent in this tx
     amount: bigint;
     // The fee that was paid for this tx
