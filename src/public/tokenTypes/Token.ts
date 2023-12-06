@@ -122,5 +122,4 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceMainnet: new PublicKey('nrYkQQQur7z8rYTST3G9GqATviK5SxTDkrqd21MW6Ue'),
         pythUSDPriceDevnet: new PublicKey('ELF78ZhSr8u4SCixA7YSpjdZHZoSNrAhcyysbavpC2kA'),
     },
-
 ];
