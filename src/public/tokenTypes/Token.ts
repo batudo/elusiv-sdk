@@ -110,4 +110,16 @@ export const tokenInfos: TokenInfo[] = [
         pythUSDPriceMainnet: new PublicKey('AnLf8tVYCM816gmBjiy8n53eXKKEDydT5piYjjQDPgTB'),
         pythUSDPriceDevnet: new PublicKey('EhgAdTrgxi4ZoVZLQx1n93vULucPpiFi2BQtz9RJr1y6'),
     },
+    {
+        symbol: 'PYTH',
+        mintMainnet: new PublicKey('HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'),
+        mintDevnet: new PublicKey('9ENsS7oDRD37YgimCK78oWBaAr5Nd1JTn3ZjgNc4xRq5'),
+        active: true,
+        decimals: 6,
+        min: 2_000,
+        max: 16_000_000_000,
+        denomination: 1000000,
+        pythUSDPriceMainnet: new PublicKey('nrYkQQQur7z8rYTST3G9GqATviK5SxTDkrqd21MW6Ue'),
+        pythUSDPriceDevnet: new PublicKey('ELF78ZhSr8u4SCixA7YSpjdZHZoSNrAhcyysbavpC2kA'),
+    },
 ];
