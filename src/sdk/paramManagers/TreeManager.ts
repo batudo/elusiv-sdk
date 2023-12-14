@@ -42,7 +42,7 @@ export class TreeManager {
     public async getCommitmentsInfo(
         commitments: Pair<ReprScalar, number>[],
     ): Promise<CommitmentInfo[]> {
-        const commitmentIndices = await this.getCommitmentIndices(commitments.map((c) => ({ fst: c.fst, snd: IndexConverter.leafIndexToLocalIndex(c.snd) })));
+        const commitmentIndices = await this.getCommitmentIndices(commitments.map((c) => ({ fst: c.fst, snd: TreeManager.commLeafIndexToLocalIndex(c.snd) })));
         const ops = await this.getOpenings(commitmentIndices);
         if (ops.openings.length !== commitmentIndices.length && commitmentIndices.length !== commitments.length) throw new Error(INVALID_SIZE('commIndices', commitmentIndices.length, commitments.length));
         const res: CommitmentInfo[] = [];
@@ -58,7 +58,7 @@ export class TreeManager {
     }
 
     public async hasCommitment(commitmentHash: ReprScalar, leafStartPointer: number): Promise<boolean> {
-        const startPointer: LocalIndex = IndexConverter.leafIndexToLocalIndex(leafStartPointer);
+        const startPointer: LocalIndex = TreeManager.commLeafIndexToLocalIndex(leafStartPointer);
         let commitmentIndex: LocalIndex;
         try {
             commitmentIndex = (await this.getCommitmentIndices([{ fst: commitmentHash, snd: startPointer }]))[0];
@@ -171,5 +171,11 @@ export class TreeManager {
             Uint8Array.from([130, 154, 1, 250, 228, 248, 226, 43, 27, 76, 165, 173, 91, 84, 165, 131, 78, 224, 152, 167, 123, 115, 91, 213, 116, 49, 167, 101, 109, 41, 161, 8]),
         ] as MontScalar[];
         return Poseidon.getPoseidon().montToRepr(defaultValues[level]);
+    }
+
+    private static commLeafIndexToLocalIndex(leafIndex: number): LocalIndex {
+        // - 100 just in case to allow for some buffer
+        const bufferedIndex = Math.max(leafIndex - 100, 0);
+        return IndexConverter.leafIndexToLocalIndex(bufferedIndex);
     }
 }
