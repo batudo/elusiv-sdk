@@ -101,7 +101,7 @@ export class StorageAccountReader extends AccountReader {
     // Pait<Commhash, startindex>
     private static findCommitmentIndicesInChunk(chunk: Uint8Array, commHashes: readonly MontScalar[], startIndices: number[]): (number | undefined)[] {
         const zeroCommitment = zeros(32);
-        const sortedStartIndices = startIndices.sort();
+        const sortedStartIndices = startIndices.sort((a, b) => a - b);
         // TODO: Replace this with a map?
         const res: (number | undefined)[] = new Array(commHashes.length);
         // Confusing name, but just the start index we're currently on from the above array.
