@@ -17,7 +17,7 @@ import { MERGE_NEEDED, SEND_ARITY, VIEWING_KEY_VERSION } from '../constants.js';
 import { ElusivTxData } from './txData/ElusivTxData.js';
 import { PrivateTxWrapper } from './transactionWrappers/TxWrappers.js';
 import { getAssociatedTokenAcc } from './tokenTypes/TokenTypeFuncs.js';
-import { getDefaultWarden, WardenInfo } from './WardenInfo.js';
+import { getDefaultWarden } from './WardenInfo.js';
 import { RemoteParamFetching, topupRParamsToSendRParams } from '../sdk/transactions/txBuilding/RemoteParamFetching.js';
 import { TransactionBuilding } from '../sdk/transactions/txBuilding/TransactionBuilding.js';
 import { SeedWrapper } from '../sdk/clientCrypto/SeedWrapper.js';
@@ -128,14 +128,14 @@ export class Elusiv extends ElusivViewer {
      * If this boolean is set to false, this merge is done before building the topup if needed (i.e. the sdk user does not need to worry about this). Note: This means, a topup
      * might take longer to build at times as a merge needs to be built and confirmed prior.
      * If this boolean is set to true, this method will throw until a merge has been performed manually by the sdk user.
-     * @param wardenInfo Controls what warden is used. Filled in with default config.
+     * @param wardenURL Controls what warden is used. Filled in with default config.
      * @param sender Optional sender to use for the topup. Defaults to the owner of the elusiv instance.
      */
     public async buildTopUpTx(
         amount: number,
         tokenType: TokenType,
         manualMerge = false,
-        wardenInfo: WardenInfo = getDefaultWarden(this.cluster),
+        wardenURL: string = getDefaultWarden(this.cluster),
         sender = this.ownerKey,
         memo: string | undefined = undefined,
     ): Promise<TopupTxData> {
@@ -150,6 +150,7 @@ export class Elusiv extends ElusivViewer {
             this.feeManager,
             this.treeManager,
             tokenType,
+            wardenURL,
         );
 
         let mergeTxData: SendTxData | undefined;
@@ -163,7 +164,7 @@ export class Elusiv extends ElusivViewer {
                 tokenType,
                 this.ownerKey,
                 asSendRParams,
-                wardenInfo,
+                { url: wardenURL, pubKey: remoteParams.wardenPubkey },
                 this.seedWrapper,
             );
 
@@ -179,7 +180,7 @@ export class Elusiv extends ElusivViewer {
             sender,
             false,
             remoteParams,
-            wardenInfo,
+            { url: wardenURL, pubKey: remoteParams.wardenPubkey },
             this.seedWrapper,
             this.cluster,
             mergeTxData?.getTotalFeeAmount(),
@@ -193,13 +194,13 @@ export class Elusiv extends ElusivViewer {
      * @param tokenType Type of token to be withdrawn
      * @param allowOwnerOffCurve Controls wether we can send tokens to PDAs or other accounts whose public key does not lie on ed25519. Same idea as for
      * the getAssociatedTokenAddressSync function from the spl library.
-     * @param wardenInfo Controls what warden is used. Filled in with default config.
+     * @param wardenURL Controls what warden is used. Filled in with default config.
      */
     public async buildWithdrawTx(
         tokenType: TokenType,
         extraFee: OptionalFee = { amount: BigInt(0), collector: SystemProgram.programId },
         allowOwnerOffCurve = false,
-        wardenInfo: WardenInfo = getDefaultWarden(this.cluster),
+        wardenURL: string = getDefaultWarden(this.cluster),
     ): Promise<SendTxData> {
         const tokenBalance = bigIntToNumber(await this.getLatestPrivateBalance(tokenType));
         // 5% buffer for price fluctuations while building, shouldn't be much since fees are < 1 ct
@@ -207,7 +208,7 @@ export class Elusiv extends ElusivViewer {
         // < because obviously and = bc no point in withdrawing to only pay the fee and receive 0
         if (tokenBalance <= withdrawFee) throw new Error('Insufficient funds to pay for withdraw fee');
         // We add a small buffer to the fee for potential token price fluctuations
-        const withdrawTx = await this.buildSendTx(tokenBalance - withdrawFee, this.ownerKey, tokenType, undefined, undefined, extraFee, false, allowOwnerOffCurve, undefined, undefined, wardenInfo);
+        const withdrawTx = await this.buildSendTx(tokenBalance - withdrawFee, this.ownerKey, tokenType, undefined, undefined, extraFee, false, allowOwnerOffCurve, undefined, undefined, wardenURL);
         if (withdrawTx.getTotalFeeAmount() > withdrawFee) throw new Error('Insufficient fee for withdraw tx, please try again.');
         return withdrawTx;
     }
@@ -231,7 +232,7 @@ export class Elusiv extends ElusivViewer {
      * is funded with rent, else this will fail.
      * @param customFeeCollectorTA For the case that you want to provide an override for a Token Account to collect the OptionalFee that is not the collector in
      * OptionalFee's ATA. Make sure this token account is funded with rent, else this will fail.
-     * @param wardenInfo Controls what warden is used. Filled in with default config.
+     * @param wardenURL Controls what warden is used. Filled in with default config.
      */
     public async buildSendTx(
         amount: number,
@@ -244,7 +245,7 @@ export class Elusiv extends ElusivViewer {
         allowOwnerOffCurve = false,
         customRecipientTA: PublicKey | undefined = undefined,
         customFeeCollectorTA: PublicKey | undefined = undefined,
-        wardenInfo: WardenInfo = getDefaultWarden(this.cluster),
+        wardenURL: string = getDefaultWarden(this.cluster),
     ): Promise<SendTxData> {
         const sanitizedAmount = cleanUserInput(amount);
 
@@ -271,13 +272,14 @@ export class Elusiv extends ElusivViewer {
             this.feeManager,
             this.treeManager,
             tokenType,
+            wardenURL,
         ).then(async (res) => TransactionBuilding.buildSendTxData(
             sanitizedAmount,
             tokenType,
             { TA: recipientTA, owner: recipient, exists: await existsRecipientTA },
             this.ownerKey,
             res,
-            wardenInfo,
+            { url: wardenURL, pubKey: res.wardenPubkey },
             this.seedWrapper,
             refKey,
             memo,

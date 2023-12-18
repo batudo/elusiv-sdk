@@ -10,13 +10,19 @@ import {
     JSONRPCResponse,
     ParsedLamportTransfer,
     ParsedSPLTransfer,
-    SignatureSerialized, WardenErrorResponse, WardenRawDataResponse, WardenSignatureResponse,
+    SignatureSerialized, WardenErrorResponse, WardenPubkeyResponse, WardenRawDataResponse, WardenSignatureResponse,
 } from './types.js';
 
 type ElusivWardenResponse = {
     result: number[] | undefined;
     jsonrpc: string;
     id: string;
+}
+
+export function isWardenPubkeyResponse(arg: unknown): arg is WardenPubkeyResponse {
+    return (arg as ElusivWardenResponse).result !== undefined
+        && typeof (arg as ElusivWardenResponse).result === 'string'
+        && typeof (arg as ElusivWardenResponse).jsonrpc === 'string' && typeof (arg as ElusivWardenResponse).id === 'string';
 }
 
 export function isWardenSignatureResponse(arg: unknown): arg is WardenSignatureResponse {

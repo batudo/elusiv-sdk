@@ -1,5 +1,5 @@
 import { getMinimumBalanceForRentExemptAccount } from '@solana/spl-token';
-import { Cluster, Connection } from '@solana/web3.js';
+import { Cluster, Connection, PublicKey } from '@solana/web3.js';
 import { getSendQuadraProofParamsStatic, ProofParams } from 'elusiv-circuits';
 import { Commitment } from '@elusiv/cryptojs';
 import { CommitmentManager } from '../../paramManagers/CommitmentManager.js';
@@ -11,6 +11,7 @@ import { TransactionManager } from '../../txManagers/TransactionManager.js';
 import { GeneralSet } from '../../utils/GeneralSet.js';
 import { SeedWrapper } from '../../clientCrypto/SeedWrapper.js';
 import { TokenType } from '../../../public/tokenTypes/TokenType.js';
+import { getWardenPubkey } from '../../txSending/WardenCommunication.js';
 
 // Wrapper for the result returned from connection.getLatestBlockhash
 export type ChainStateInfo = {
@@ -24,6 +25,7 @@ export type RemoteParams = {
     readonly lamportsPerToken: number;
     readonly sendQuadraProofParams: ProofParams;
     readonly tokenAccRent: bigint;
+    readonly wardenPubkey: PublicKey;
 }
 
 export type TopupRemoteParams = RemoteParams & {
@@ -53,6 +55,7 @@ export function topupRParamsToSendRParams(tr: TopupRemoteParams): SendRemotePara
         lamportsPerToken: tr.lamportsPerToken,
         sendQuadraProofParams: tr.sendQuadraProofParams,
         tokenAccRent: tr.tokenAccRent,
+        wardenPubkey: tr.wardenPubkey,
     };
 }
 
@@ -66,6 +69,7 @@ export class RemoteParamFetching {
         feeManager: FeeManager,
         treeManager: TreeManager,
         tokenType: TokenType,
+        wardenURL: string,
     ): Promise<TopupRemoteParams> {
         const feeCalculatorPromise = feeManager.getFeeCalculator();
         const activeCommitmentsPromise = commManager.getActiveCommitments(tokenType, seedWrapper);
@@ -74,8 +78,17 @@ export class RemoteParamFetching {
         const lamportsPerTokenPromise = FeeUtils.getLamportsPerToken(connection, cluster, tokenType);
         const blockHashInfoPromise = connection.getLatestBlockhash();
         const tokenSendFee = getMinimumBalanceForRentExemptAccount(connection).then((r) => BigInt(r));
+        const wardenPubkey = getWardenPubkey(wardenURL);
 
-        return Promise.all([feeCalculatorPromise, activeCommitmentsPromise, lastUsedNoncePromise, merkleStartIndexPromise, lamportsPerTokenPromise, blockHashInfoPromise, tokenSendFee])
+        return Promise.all([
+            feeCalculatorPromise,
+            activeCommitmentsPromise,
+            lastUsedNoncePromise,
+            merkleStartIndexPromise,
+            lamportsPerTokenPromise,
+            blockHashInfoPromise,
+            tokenSendFee,
+            wardenPubkey])
             .then((res) => ({
                 feeCalculator: res[0].calculator,
                 feeVersionData: res[0].feeVersionData,
@@ -86,6 +99,7 @@ export class RemoteParamFetching {
                 chainState: res[5],
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
                 tokenAccRent: res[6],
+                wardenPubkey: new PublicKey(res[7]),
             }));
     }
 
@@ -98,10 +112,11 @@ export class RemoteParamFetching {
         feeManager: FeeManager,
         treeManager: TreeManager,
         tokenType: TokenType,
+        warderURL: string,
     ): Promise<SendRemoteParams> {
         const activeCommitmentsPromise = commManager.getActiveCommitments(tokenType, seedWrapper, undefined);
         const lastUsedNoncePromise = this.getMostRecentNonce(seedWrapper, txManager, commManager);
-        const baseSendParamsPromise = this.fetchBaseSendRemoteParams(connection, cluster, feeManager, treeManager, tokenType);
+        const baseSendParamsPromise = this.fetchBaseSendRemoteParams(connection, cluster, feeManager, treeManager, tokenType, warderURL);
 
         return Promise.all([activeCommitmentsPromise, lastUsedNoncePromise, baseSendParamsPromise])
             .then((res) => ({
@@ -117,13 +132,15 @@ export class RemoteParamFetching {
         feeManager: FeeManager,
         treeManager: TreeManager,
         tokenType: TokenType,
+        wardenURL: string,
     ): Promise<BaseSendRemoteParams> {
         const merkleStartIndexPromise = treeManager.getLatestLeafIndex();
         const sendFeeCalculatorPromise = feeManager.getFeeCalculator();
         const lamportsPerTokenPromise = FeeUtils.getLamportsPerToken(connection, cluster, tokenType);
         const tokenSendFee = getMinimumBalanceForRentExemptAccount(connection).then((r) => BigInt(r));
+        const wardenPubkey = getWardenPubkey(wardenURL);
 
-        return Promise.all([merkleStartIndexPromise, sendFeeCalculatorPromise, lamportsPerTokenPromise, tokenSendFee])
+        return Promise.all([merkleStartIndexPromise, sendFeeCalculatorPromise, lamportsPerTokenPromise, tokenSendFee, wardenPubkey])
             .then((res) => ({
                 merkleStartIndex: res[0],
                 feeVersion: res[1].feeVersionData.feeVersion,
@@ -131,6 +148,7 @@ export class RemoteParamFetching {
                 lamportsPerToken: res[2],
                 tokenAccRent: res[3],
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
+                wardenPubkey: new PublicKey(res[4]),
             }));
     }
 

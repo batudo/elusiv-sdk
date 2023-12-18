@@ -1,6 +1,5 @@
 import { ConfirmedSignatureInfo } from '@solana/web3.js';
 import { INVALID_TX_TYPE } from '../../constants.js';
-import { WardenInfo } from '../../public/WardenInfo.js';
 import { ElusivTxData } from '../../public/txData/ElusivTxData.js';
 import { SendTxData } from '../../public/txData/SendTxData.js';
 import { TopupTxData } from '../../public/txData/TopupTxData.js';
@@ -27,17 +26,17 @@ export class TransactionSender {
         signedTxData: TopupTxData,
     ): Promise<ConfirmedSignatureInfo> {
         const serialized: StoreJSON = TransactionSerialization.serializePartiallySignedStore(signedTxData.tx);
-        return TransactionSender.sendTopUpUnchecked(serialized, signedTxData.wardenInfo).then((res) => TransactionSerialization.deserializeSerializedSignature(res.result));
+        return TransactionSender.sendTopUpUnchecked(serialized, signedTxData.wardenInfo.url).then((res) => TransactionSerialization.deserializeSerializedSignature(res.result));
     }
 
     // Send only the topup tx without checking its data and for a merge
-    private static sendTopUpUnchecked(signedTxData: StoreJSON, wardenInfo: WardenInfo): Promise<WardenSignatureResponse> {
-        const relayComm = new WardenCommunicator(wardenInfo);
+    private static sendTopUpUnchecked(signedTxData: StoreJSON, wardenURL: string): Promise<WardenSignatureResponse> {
+        const relayComm = new WardenCommunicator(wardenURL);
         return relayComm.postWardenSigRequest(signedTxData);
     }
 
-    private static sendSendUnchecked(sendData: SendJSON, wardenInfo: WardenInfo): Promise<WardenSignatureResponse> {
-        const relayComm = new WardenCommunicator(wardenInfo);
+    private static sendSendUnchecked(sendData: SendJSON, wardenURL: string): Promise<WardenSignatureResponse> {
+        const relayComm = new WardenCommunicator(wardenURL);
         return relayComm.postWardenSigRequest(sendData);
     }
 
@@ -50,6 +49,6 @@ export class TransactionSender {
             txData.isSolanaPayTransfer,
         );
 
-        return TransactionSender.sendSendUnchecked(serialized, txData.wardenInfo).then((res) => TransactionSerialization.deserializeSerializedSignature(res.result));
+        return TransactionSender.sendSendUnchecked(serialized, txData.wardenInfo.url).then((res) => TransactionSerialization.deserializeSerializedSignature(res.result));
     }
 }
