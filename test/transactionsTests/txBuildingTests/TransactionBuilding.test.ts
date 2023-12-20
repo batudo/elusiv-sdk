@@ -1,4 +1,5 @@
 import {
+    Keypair,
     LAMPORTS_PER_SOL, PublicKey, Transaction,
 } from '@solana/web3.js';
 import { verifySendQuadraProof } from 'elusiv-circuits/dist/proofVerification';
@@ -236,6 +237,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                 },
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
                 tokenAccRent: BigInt(0),
+                wardenPubkey: Keypair.generate().publicKey,
             };
 
             const topup: TopupTxData = await TransactionBuilding.buildTopUpTxData(
@@ -291,6 +293,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                 },
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
                 tokenAccRent: BigInt(0),
+                wardenPubkey: Keypair.generate().publicKey,
             };
 
             const topup: TopupTxData = await TransactionBuilding.buildTopUpTxData(
@@ -341,6 +344,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                 },
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
                 tokenAccRent: BigInt(0),
+                wardenPubkey: Keypair.generate().publicKey,
             };
 
             const topup: TopupTxData = await TransactionBuilding.buildTopUpTxData(
@@ -391,6 +395,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                 },
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
                 tokenAccRent: BigInt(0),
+                wardenPubkey: Keypair.generate().publicKey,
             };
 
             const mergeFee = 100;
@@ -442,6 +447,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                 },
                 sendQuadraProofParams: getSendQuadraProofParamsStatic(),
                 tokenAccRent: BigInt(0),
+                wardenPubkey: Keypair.generate().publicKey,
             };
 
             await expect(
@@ -506,6 +512,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                     lamportsPerToken,
                     tokenAccRent: tokenSendFee,
                     sendQuadraProofParams: getSendQuadraProofParamsStatic(),
+                    wardenPubkey: Keypair.generate().publicKey,
                 };
 
                 const wardenInfo: WardenInfo = {
@@ -575,6 +582,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                     lamportsPerToken,
                     tokenAccRent: tokenSendFee,
                     sendQuadraProofParams: getSendQuadraProofParamsStatic(),
+                    wardenPubkey: Keypair.generate().publicKey,
                 };
 
                 const wardenInfo: WardenInfo = {
@@ -634,6 +642,7 @@ for (const t of ['LAMPORTS', 'USDC'] as TokenType[]) {
                     lamportsPerToken,
                     tokenAccRent: tokenSendFee,
                     sendQuadraProofParams: getSendQuadraProofParamsStatic(),
+                    wardenPubkey: Keypair.generate().publicKey,
                 };
 
                 const wardenInfo: WardenInfo = {
