@@ -1,9 +1,9 @@
 import { Cluster, Connection } from '@solana/web3.js';
 import { PriceStatus, PythHttpClient, getPythProgramKeyForCluster } from '@pythnetwork/client';
-import { getDenomination, getPythPriceAcc, getTokenInfo } from '../../../public/tokenTypes/TokenTypeFuncs.js';
-import { sleep, zipSameLength } from '../../utils/utils.js';
-import { TokenType } from '../../../public/tokenTypes/TokenType.js';
-import { BasicFee, Fee } from '../../../public/types.js';
+import { getDenomination, getPythPriceAcc, getTokenInfo } from './tokenTypes/TokenTypeFuncs.js';
+import { sleep, zipSameLength } from '../sdk/utils/utils.js';
+import { TokenType } from './tokenTypes/TokenType.js';
+import { BasicFee, Fee } from './types.js';
 
 // Default precision is 9 due to 1 SOL = 10^9 Lamports
 const DEFAULT_PRECISION = 9;

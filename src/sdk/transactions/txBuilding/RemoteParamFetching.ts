@@ -5,7 +5,7 @@ import { Commitment } from '@elusiv/cryptojs';
 import { CommitmentManager } from '../../paramManagers/CommitmentManager.js';
 import { FeeCalculator } from '../../paramManagers/fee/FeeCalculator.js';
 import { FeeManager, FeeVersionData } from '../../paramManagers/fee/FeeManager.js';
-import { FeeUtils } from '../../paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from '../../../public/FeeUtils.js';
 import { TreeManager } from '../../paramManagers/TreeManager.js';
 import { TransactionManager } from '../../txManagers/TransactionManager.js';
 import { GeneralSet } from '../../utils/GeneralSet.js';

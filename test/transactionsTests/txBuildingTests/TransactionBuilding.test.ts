@@ -21,7 +21,7 @@ import {
 } from '../../../src/constants.js';
 import { FeeCalculator } from '../../../src/sdk/paramManagers/fee/FeeCalculator.js';
 import { FeeVersionData } from '../../../src/sdk/paramManagers/fee/FeeManager.js';
-import { FeeUtils } from '../../../src/sdk/paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from '../../../src/public/FeeUtils.js';
 import { getNumberFromTokenType } from '../../../src/public/tokenTypes/TokenTypeFuncs.js';
 import { StoreTx } from '../../../src/sdk/transactions/StoreTx.js';
 import { InstructionBuilding } from '../../../src/sdk/transactions/txBuilding/InstructionBuilding.js';

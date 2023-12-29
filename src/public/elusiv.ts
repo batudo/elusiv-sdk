@@ -25,7 +25,7 @@ import { tokenAccExists } from '../sdk/utils/pubKeyUtils.js';
 import { generateViewingKey, ViewingKey } from '../compliance/ViewingKey.js';
 import { addFees, getTotalFeeAmount } from './Fee.js';
 import { FeeCalculator } from '../sdk/paramManagers/fee/FeeCalculator.js';
-import { FeeUtils } from '../sdk/paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from './FeeUtils.js';
 import { ElusivViewer } from './elusivViewer.js';
 import { isTypeError } from '../sdk/transactions/txBuilding/serializedTypes/typeGuards.js';
 import { cleanUserInput, sleep } from '../sdk/utils/utils.js';

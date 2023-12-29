@@ -1,6 +1,6 @@
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { expect } from 'chai';
-import { FeeUtils } from '../../../src/sdk/paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from '../../../src/public/FeeUtils.js';
 
 describe('Fee utils tests', () => {
     describe('Lamport fee to fee object tests', () => {
