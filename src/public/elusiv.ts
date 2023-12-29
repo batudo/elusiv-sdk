@@ -35,6 +35,7 @@ import {
 } from './types.js';
 import { TxTypes } from './TxTypes.js';
 import { TokenType } from './tokenTypes/TokenType.js';
+import { getWardenPubkey } from '../sdk/txSending/WardenCommunication.js';
 
 export class Elusiv extends ElusivViewer {
     /**
@@ -53,6 +54,16 @@ export class Elusiv extends ElusivViewer {
      * Owner's public key
      */
     private ownerKey: PublicKey;
+
+    /**
+     * Warden pubkey
+     */
+    private wardenKey: PublicKey;
+
+    /**
+     * Warden URL
+     */
+    private wardenURL: string;
 
     /**
      * Internal
@@ -77,6 +88,8 @@ export class Elusiv extends ElusivViewer {
     private constructor(
         cluster: Cluster,
         owner: PublicKey,
+        wardenKey: PublicKey,
+        wardenURL: string,
         connection: Connection,
         txManager: TransactionManager,
         feeManager: FeeManager,
@@ -86,6 +99,8 @@ export class Elusiv extends ElusivViewer {
     ) {
         super(cluster, connection, txManager, commManager);
         this.ownerKey = owner;
+        this.wardenKey = wardenKey;
+        this.wardenURL = wardenURL;
         this.txSender = new TransactionSender();
         this.feeManager = feeManager;
         this.treeManager = treeManager;
@@ -106,6 +121,7 @@ export class Elusiv extends ElusivViewer {
         owner: PublicKey,
         connection: Connection,
         cluster: Cluster,
+        wardenURL = getDefaultWarden(cluster),
     ): Promise<Elusiv> {
         // Intialize poseidon for cryptography
         const poseidonSetup = Poseidon.setupPoseidon();
@@ -114,7 +130,8 @@ export class Elusiv extends ElusivViewer {
         const txManager = TransactionManager.createTxManager(connection, cluster, seedWrapper.getRootViewingKeyWrapper());
         const treeManager = TreeManager.createTreeManager(connection, cluster);
         const commManager = CommitmentManager.createCommitmentManager(treeManager, txManager);
-        const result = new Elusiv(cluster, owner, connection, txManager, feeManager, commManager, treeManager, seedWrapper);
+        const wardenKey = await getWardenPubkey(wardenURL);
+        const result = new Elusiv(cluster, owner, wardenKey, wardenURL, connection, txManager, feeManager, commManager, treeManager, seedWrapper);
         // Finish initializing poseidon
         await poseidonSetup;
         return result;
@@ -135,7 +152,6 @@ export class Elusiv extends ElusivViewer {
         amount: number,
         tokenType: TokenType,
         manualMerge = false,
-        wardenURL: string = getDefaultWarden(this.cluster),
         sender = this.ownerKey,
         memo: string | undefined = undefined,
     ): Promise<TopupTxData> {
@@ -150,7 +166,6 @@ export class Elusiv extends ElusivViewer {
             this.feeManager,
             this.treeManager,
             tokenType,
-            wardenURL,
         );
 
         let mergeTxData: SendTxData | undefined;
@@ -164,7 +179,7 @@ export class Elusiv extends ElusivViewer {
                 tokenType,
                 this.ownerKey,
                 asSendRParams,
-                { url: wardenURL, pubKey: remoteParams.wardenPubkey },
+                { url: this.wardenURL, pubKey: this.wardenKey },
                 this.seedWrapper,
             );
 
@@ -180,7 +195,7 @@ export class Elusiv extends ElusivViewer {
             sender,
             false,
             remoteParams,
-            { url: wardenURL, pubKey: remoteParams.wardenPubkey },
+            { url: this.wardenURL, pubKey: this.wardenKey },
             this.seedWrapper,
             this.cluster,
             mergeTxData?.getTotalFeeAmount(),
@@ -194,13 +209,11 @@ export class Elusiv extends ElusivViewer {
      * @param tokenType Type of token to be withdrawn
      * @param allowOwnerOffCurve Controls wether we can send tokens to PDAs or other accounts whose public key does not lie on ed25519. Same idea as for
      * the getAssociatedTokenAddressSync function from the spl library.
-     * @param wardenURL Controls what warden is used. Filled in with default config.
      */
     public async buildWithdrawTx(
         tokenType: TokenType,
         extraFee: OptionalFee = { amount: BigInt(0), collector: SystemProgram.programId },
         allowOwnerOffCurve = false,
-        wardenURL: string = getDefaultWarden(this.cluster),
     ): Promise<SendTxData> {
         const tokenBalance = bigIntToNumber(await this.getLatestPrivateBalance(tokenType));
         // 5% buffer for price fluctuations while building, shouldn't be much since fees are < 1 ct
@@ -208,7 +221,7 @@ export class Elusiv extends ElusivViewer {
         // < because obviously and = bc no point in withdrawing to only pay the fee and receive 0
         if (tokenBalance <= withdrawFee) throw new Error('Insufficient funds to pay for withdraw fee');
         // We add a small buffer to the fee for potential token price fluctuations
-        const withdrawTx = await this.buildSendTx(tokenBalance - withdrawFee, this.ownerKey, tokenType, undefined, undefined, extraFee, false, allowOwnerOffCurve, undefined, undefined, wardenURL);
+        const withdrawTx = await this.buildSendTx(tokenBalance - withdrawFee, this.ownerKey, tokenType, undefined, undefined, extraFee, false, allowOwnerOffCurve, undefined, undefined);
         if (withdrawTx.getTotalFeeAmount() > withdrawFee) throw new Error('Insufficient fee for withdraw tx, please try again.');
         return withdrawTx;
     }
@@ -245,7 +258,6 @@ export class Elusiv extends ElusivViewer {
         allowOwnerOffCurve = false,
         customRecipientTA: PublicKey | undefined = undefined,
         customFeeCollectorTA: PublicKey | undefined = undefined,
-        wardenURL: string = getDefaultWarden(this.cluster),
     ): Promise<SendTxData> {
         const sanitizedAmount = cleanUserInput(amount);
 
@@ -272,14 +284,13 @@ export class Elusiv extends ElusivViewer {
             this.feeManager,
             this.treeManager,
             tokenType,
-            wardenURL,
         ).then(async (res) => TransactionBuilding.buildSendTxData(
             sanitizedAmount,
             tokenType,
             { TA: recipientTA, owner: recipient, exists: await existsRecipientTA },
             this.ownerKey,
             res,
-            { url: wardenURL, pubKey: res.wardenPubkey },
+            { url: this.wardenURL, pubKey: this.wardenKey },
             this.seedWrapper,
             refKey,
             memo,

@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import { INVALID_WARDEN_RESPONSE } from '../../constants.js';
 import {
     isWardenErrorResponse, isWardenPubkeyResponse, isWardenRawDataResponse, isWardenSignatureResponse,
@@ -95,7 +96,12 @@ export class WardenCommunicator {
     }
 }
 
-export async function getWardenPubkey(url: string, timeout = 10000): Promise<WardenPubkeyResponse> {
+export async function getWardenPubkey(url: string, timeout = 10000): Promise<PublicKey> {
+    return getWardenPubkeyRaw(url, timeout)
+        .then((res) => new PublicKey(res.result));
+}
+
+async function getWardenPubkeyRaw(url: string, timeout = 10000): Promise<WardenPubkeyResponse> {
     const request: WardenMessage = {
         jsonrpc: '2.0',
         id: '0',
