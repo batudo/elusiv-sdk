@@ -35,7 +35,7 @@ import {
 } from './types.js';
 import { TxTypes } from './TxTypes.js';
 import { TokenType } from './tokenTypes/TokenType.js';
-import { getPythPriceFetcher } from '../sdk/pyth.js';
+import { getPythPriceFetcher } from './pyth.js';
 
 export class Elusiv extends ElusivViewer {
     /**

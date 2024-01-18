@@ -1,9 +1,9 @@
 import { PriceStatus, PythHttpClient, getPythProgramKeyForCluster } from '@pythnetwork/client';
 import { Cluster, Connection } from '@solana/web3.js';
-import { PriceFetcher } from '../public/types.js';
-import { getPythPriceAcc } from '../public/tokenTypes/TokenTypeFuncs.js';
-import { sleep } from './utils/utils.js';
-import { TokenType } from '../public/tokenTypes/TokenType.js';
+import { PriceFetcher } from './types.js';
+import { getPythPriceAcc } from './tokenTypes/TokenTypeFuncs.js';
+import { sleep } from '../sdk/utils/utils.js';
+import { TokenType } from './tokenTypes/TokenType.js';
 
 export function getPythPriceFetcher(conn: Connection, cluster: Cluster): PriceFetcher {
     const pythPublicKey = getPythProgramKeyForCluster(cluster);
