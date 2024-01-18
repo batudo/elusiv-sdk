@@ -480,6 +480,10 @@ export class Elusiv extends ElusivViewer {
         return this.seedWrapper.deriveKeyExternal(info, salt, length);
     }
 
+    public setPriceFetcher(priceFetcher: PriceFetcher): void {
+        this.priceFetcher = priceFetcher;
+    }
+
     private async estimateSendFeeInternal(
         feeCalcInfo: SendFeeCalcInfo,
         allowOwnerOffCurve: boolean,
