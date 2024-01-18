@@ -2,7 +2,7 @@ export {
     getTotalFeeAmount, getComputationFeeTotal,
 } from './public/Fee.js';
 export {
-    FeeCalcInfo, TopupFeeCalcInfo, SendFeeCalcInfo, Fee, OptionalFee, BasicFee,
+    FeeCalcInfo, TopupFeeCalcInfo, SendFeeCalcInfo, Fee, OptionalFee, BasicFee, PriceFetcher,
 } from './public/types.js';
 export { SharedTxData as BaseTxData } from './public/txData/SharedTxData.js';
 export { ElusivTxData } from './public/txData/ElusivTxData.js';
