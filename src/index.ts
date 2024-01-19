@@ -2,7 +2,7 @@ export {
     getTotalFeeAmount, getComputationFeeTotal,
 } from './public/Fee.js';
 export {
-    FeeCalcInfo, TopupFeeCalcInfo, SendFeeCalcInfo, Fee, OptionalFee, BasicFee,
+    FeeCalcInfo, TopupFeeCalcInfo, SendFeeCalcInfo, Fee, OptionalFee, BasicFee, PriceFetcher,
 } from './public/types.js';
 export { SharedTxData as BaseTxData } from './public/txData/SharedTxData.js';
 export { ElusivTxData } from './public/txData/ElusivTxData.js';
@@ -27,3 +27,4 @@ export { TransactionStatus } from './public/TransactionStatus.js';
 export { getSendTxWithViewingKey, ViewingKey } from './compliance/ViewingKey';
 export { SEED_MESSAGE } from './constants';
 export { getMinimumAmount } from './public/FeeUtils.js';
+export { getPythPriceFetcher } from './public/pyth.js';
