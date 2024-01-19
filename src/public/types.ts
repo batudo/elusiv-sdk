@@ -82,3 +82,8 @@ export type SendFeeCalcInfo = FeeCalcInfo & {
  * @typedef {Object} TopupFeeCalcInfo - Information needed to calculate the fee for a topup transaction
  */
 export type TopupFeeCalcInfo = FeeCalcInfo;
+
+export type PriceFetcher = {
+    getPrice: (tokenType: TokenType) => Promise<number>;
+    getPrices: (tokenTypes: TokenType[]) => Promise<number[]>;
+}

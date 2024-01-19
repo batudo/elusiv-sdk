@@ -1,16 +1,17 @@
 import { getMinimumBalanceForRentExemptAccount } from '@solana/spl-token';
-import { Cluster, Connection } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { getSendQuadraProofParamsStatic, ProofParams } from 'elusiv-circuits';
 import { Commitment } from '@elusiv/cryptojs';
 import { CommitmentManager } from '../../paramManagers/CommitmentManager.js';
 import { FeeCalculator } from '../../paramManagers/fee/FeeCalculator.js';
 import { FeeManager, FeeVersionData } from '../../paramManagers/fee/FeeManager.js';
-import { FeeUtils } from '../../paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from '../../../public/FeeUtils.js';
 import { TreeManager } from '../../paramManagers/TreeManager.js';
 import { TransactionManager } from '../../txManagers/TransactionManager.js';
 import { GeneralSet } from '../../utils/GeneralSet.js';
 import { SeedWrapper } from '../../clientCrypto/SeedWrapper.js';
 import { TokenType } from '../../../public/tokenTypes/TokenType.js';
+import { PriceFetcher } from '../../../public/types.js';
 
 // Wrapper for the result returned from connection.getLatestBlockhash
 export type ChainStateInfo = {
@@ -59,19 +60,19 @@ export function topupRParamsToSendRParams(tr: TopupRemoteParams): SendRemotePara
 export class RemoteParamFetching {
     public static async fetchTopupRemoteParams(
         connection: Connection,
-        cluster: Cluster,
         seedWrapper: SeedWrapper,
         commManager: CommitmentManager,
         txManager: TransactionManager,
         feeManager: FeeManager,
         treeManager: TreeManager,
         tokenType: TokenType,
+        priceFetcher: PriceFetcher,
     ): Promise<TopupRemoteParams> {
         const feeCalculatorPromise = feeManager.getFeeCalculator();
         const activeCommitmentsPromise = commManager.getActiveCommitments(tokenType, seedWrapper);
         const lastUsedNoncePromise = this.getMostRecentNonce(seedWrapper, txManager, commManager);
         const merkleStartIndexPromise = treeManager.getLatestLeafIndex();
-        const lamportsPerTokenPromise = FeeUtils.getLamportsPerToken(connection, cluster, tokenType);
+        const lamportsPerTokenPromise = FeeUtils.getLamportsPerToken(priceFetcher, tokenType);
         const blockHashInfoPromise = connection.getLatestBlockhash();
         const tokenSendFee = getMinimumBalanceForRentExemptAccount(connection).then((r) => BigInt(r));
 
@@ -98,17 +99,17 @@ export class RemoteParamFetching {
 
     public static fetchSendRemoteParams(
         connection: Connection,
-        cluster: Cluster,
         seedWrapper: SeedWrapper,
         commManager: CommitmentManager,
         txManager: TransactionManager,
         feeManager: FeeManager,
         treeManager: TreeManager,
         tokenType: TokenType,
+        priceFetcher: PriceFetcher,
     ): Promise<SendRemoteParams> {
         const activeCommitmentsPromise = commManager.getActiveCommitments(tokenType, seedWrapper, undefined);
         const lastUsedNoncePromise = this.getMostRecentNonce(seedWrapper, txManager, commManager);
-        const baseSendParamsPromise = this.fetchBaseSendRemoteParams(connection, cluster, feeManager, treeManager, tokenType);
+        const baseSendParamsPromise = this.fetchBaseSendRemoteParams(connection, feeManager, treeManager, tokenType, priceFetcher);
 
         return Promise.all([activeCommitmentsPromise, lastUsedNoncePromise, baseSendParamsPromise])
             .then((res) => ({
@@ -120,14 +121,14 @@ export class RemoteParamFetching {
 
     public static fetchBaseSendRemoteParams(
         connection: Connection,
-        cluster: Cluster,
         feeManager: FeeManager,
         treeManager: TreeManager,
         tokenType: TokenType,
+        priceFetcher: PriceFetcher,
     ): Promise<BaseSendRemoteParams> {
         const merkleStartIndexPromise = treeManager.getLatestLeafIndex();
         const sendFeeCalculatorPromise = feeManager.getFeeCalculator();
-        const lamportsPerTokenPromise = FeeUtils.getLamportsPerToken(connection, cluster, tokenType);
+        const lamportsPerTokenPromise = FeeUtils.getLamportsPerToken(priceFetcher, tokenType);
         const tokenSendFee = getMinimumBalanceForRentExemptAccount(connection).then((r) => BigInt(r));
 
         return Promise.all([merkleStartIndexPromise, sendFeeCalculatorPromise, lamportsPerTokenPromise, tokenSendFee])

@@ -25,16 +25,17 @@ import { tokenAccExists } from '../sdk/utils/pubKeyUtils.js';
 import { generateViewingKey, ViewingKey } from '../compliance/ViewingKey.js';
 import { addFees, getTotalFeeAmount } from './Fee.js';
 import { FeeCalculator } from '../sdk/paramManagers/fee/FeeCalculator.js';
-import { FeeUtils } from '../sdk/paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from './FeeUtils.js';
 import { ElusivViewer } from './elusivViewer.js';
 import { isTypeError } from '../sdk/transactions/txBuilding/serializedTypes/typeGuards.js';
 import { cleanUserInput, sleep } from '../sdk/utils/utils.js';
 import { ElusivTransaction } from '../sdk/transactions/ElusivTransaction.js';
 import {
-    Fee, OptionalFee, SendFeeCalcInfo, TopupFeeCalcInfo,
+    Fee, OptionalFee, PriceFetcher, SendFeeCalcInfo, TopupFeeCalcInfo,
 } from './types.js';
 import { TxTypes } from './TxTypes.js';
 import { TokenType } from './tokenTypes/TokenType.js';
+import { getPythPriceFetcher } from './pyth.js';
 import { getWardenPubkey } from '../sdk/txSending/WardenCommunication.js';
 
 export class Elusiv extends ElusivViewer {
@@ -85,6 +86,11 @@ export class Elusiv extends ElusivViewer {
     */
     private seedWrapper: SeedWrapper;
 
+    /**
+     * Internal
+     */
+    private priceFetcher: PriceFetcher;
+
     private constructor(
         cluster: Cluster,
         owner: PublicKey,
@@ -96,6 +102,7 @@ export class Elusiv extends ElusivViewer {
         commManager: CommitmentManager,
         treeManager: TreeManager,
         seedWrapper: SeedWrapper,
+        priceFetcher: PriceFetcher,
     ) {
         super(cluster, connection, txManager, commManager);
         this.ownerKey = owner;
@@ -105,6 +112,7 @@ export class Elusiv extends ElusivViewer {
         this.feeManager = feeManager;
         this.treeManager = treeManager;
         this.seedWrapper = seedWrapper;
+        this.priceFetcher = priceFetcher;
     }
 
     /**
@@ -115,6 +123,7 @@ export class Elusiv extends ElusivViewer {
      * @param owner Public key of user
      * @param connection Connection object to use to make calls to solana blockchain
      * @param cluster Cluster to operate on (e.g. 'devnet')
+     * @param priceFetcher Optional external price fetcher to use. If not provided, the default pyth price fetcher will be used.
      */
     public static async getElusivInstance(
         seed: Uint8Array,
@@ -122,6 +131,7 @@ export class Elusiv extends ElusivViewer {
         connection: Connection,
         cluster: Cluster,
         wardenURL = getDefaultWarden(cluster),
+        priceFetcher: PriceFetcher = getPythPriceFetcher(connection, cluster),
     ): Promise<Elusiv> {
         // Intialize poseidon for cryptography
         const poseidonSetup = Poseidon.setupPoseidon();
@@ -131,7 +141,7 @@ export class Elusiv extends ElusivViewer {
         const treeManager = TreeManager.createTreeManager(connection, cluster);
         const commManager = CommitmentManager.createCommitmentManager(treeManager, txManager);
         const wardenKey = await getWardenPubkey(wardenURL);
-        const result = new Elusiv(cluster, owner, wardenKey, wardenURL, connection, txManager, feeManager, commManager, treeManager, seedWrapper);
+        const result = new Elusiv(cluster, owner, wardenKey, wardenURL, connection, txManager, feeManager, commManager, treeManager, seedWrapper, priceFetcher);
         // Finish initializing poseidon
         await poseidonSetup;
         return result;
@@ -159,13 +169,13 @@ export class Elusiv extends ElusivViewer {
 
         const remoteParams = await RemoteParamFetching.fetchTopupRemoteParams(
             this.connection,
-            this.cluster,
             this.seedWrapper,
             this.commManager,
             this.txManager,
             this.feeManager,
             this.treeManager,
             tokenType,
+            this.priceFetcher,
         );
 
         let mergeTxData: SendTxData | undefined;
@@ -277,13 +287,13 @@ export class Elusiv extends ElusivViewer {
 
         return RemoteParamFetching.fetchSendRemoteParams(
             this.connection,
-            this.cluster,
             this.seedWrapper,
             this.commManager,
             this.txManager,
             this.feeManager,
             this.treeManager,
             tokenType,
+            this.priceFetcher,
         ).then(async (res) => TransactionBuilding.buildSendTxData(
             sanitizedAmount,
             tokenType,
@@ -483,6 +493,10 @@ export class Elusiv extends ElusivViewer {
         return this.seedWrapper.deriveKeyExternal(info, salt, length);
     }
 
+    public setPriceFetcher(priceFetcher: PriceFetcher): void {
+        this.priceFetcher = priceFetcher;
+    }
+
     private async estimateSendFeeInternal(
         feeCalcInfo: SendFeeCalcInfo,
         allowOwnerOffCurve: boolean,
@@ -520,7 +534,7 @@ export class Elusiv extends ElusivViewer {
         const uniqueTokens = [...new Set(tokenTypes)];
         const tokenPriceMap = new Map<TokenType, number>();
         await Promise.all([...uniqueTokens].map(async (tokenType) => {
-            const price = await FeeUtils.getLamportsPerToken(this.connection, this.cluster, tokenType);
+            const price = await FeeUtils.getLamportsPerToken(this.priceFetcher, tokenType);
             tokenPriceMap.set(tokenType, price);
         }));
         return tokenPriceMap;

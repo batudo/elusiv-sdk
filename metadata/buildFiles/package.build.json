@@ -1,6 +1,6 @@
 {
     "name": "@elusiv/sdk",
-    "version": "0.1.25",
+    "version": "0.1.28",
     "main": "index.mjs",
     "module": "index.mjs",
     "types": "index.d.ts",
@@ -31,7 +31,7 @@
         "node-fetch": "^3.3.1",
         "@elusiv/cryptojs": "^1.0.12",
         "@elusiv/serialization": "^1.0.11",
-        "@elusiv/ffjavascript": "^0.2.571"
+        "@elusiv/ffjavascript": "^0.2.64"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

@@ -28,7 +28,7 @@ import { pubKeyToBigInt } from '../../utils/pubKeyUtils.js';
 import { SendTx } from '../SendTx.js';
 import { commitmentArrToSet, GeneralSet } from '../../utils/GeneralSet.js';
 import { StoreTx } from '../StoreTx.js';
-import { FeeUtils, getMinimumAmount } from '../../paramManagers/fee/FeeUtils.js';
+import { FeeUtils, getMinimumAmount } from '../../../public/FeeUtils.js';
 import { SeedWrapper } from '../../clientCrypto/SeedWrapper.js';
 import { stringToUtf8ByteCodes } from '../../utils/stringUtils.js';
 import { RVKWrapper } from '../../clientCrypto/RVKWrapper.js';

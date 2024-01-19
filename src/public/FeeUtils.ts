@@ -1,9 +1,7 @@
-import { Cluster, Connection } from '@solana/web3.js';
-import { PriceStatus, PythHttpClient, getPythProgramKeyForCluster } from '@pythnetwork/client';
-import { getDenomination, getPythPriceAcc, getTokenInfo } from '../../../public/tokenTypes/TokenTypeFuncs.js';
-import { sleep, zipSameLength } from '../../utils/utils.js';
-import { TokenType } from '../../../public/tokenTypes/TokenType.js';
-import { BasicFee, Fee } from '../../../public/types.js';
+import { getDenomination, getTokenInfo } from './tokenTypes/TokenTypeFuncs.js';
+import { zipSameLength } from '../sdk/utils/utils.js';
+import { TokenType } from './tokenTypes/TokenType.js';
+import { BasicFee, Fee, PriceFetcher } from './types.js';
 
 // Default precision is 9 due to 1 SOL = 10^9 Lamports
 const DEFAULT_PRECISION = 9;
@@ -54,9 +52,9 @@ export class FeeUtils {
         return Math.ceil(tokenAmount * bufferMultiplier);
     }
 
-    public static async getLamportsPerToken(connection: Connection, cluster: Cluster, tokenType: TokenType): Promise<number> {
+    public static async getLamportsPerToken(priceFetcher: PriceFetcher, tokenType: TokenType): Promise<number> {
         if (tokenType === 'LAMPORTS') return 1;
-        const priceData = await FeeUtils.fetchPythPrices(connection, cluster, ['LAMPORTS', tokenType]);
+        const priceData = await FeeUtils.fetchPrices(priceFetcher, ['LAMPORTS', tokenType]);
         // USD/T / USD/L  = USD/T * L/USD = L/T
         return priceData[1] / priceData[0];
     }
@@ -72,27 +70,9 @@ export class FeeUtils {
         return Number.parseFloat((lamportAmount / lamportsPerToken).toFixed(precision));
     }
 
-    private static async fetchPythPrices(connection: Connection, cluster: Cluster, tokens: TokenType[], maxRetries = 5, msBetweenRetries = 200): Promise<number[]> {
-        const pythPublicKey = getPythProgramKeyForCluster(cluster);
-        const pythClient = new PythHttpClient(connection, pythPublicKey);
-        const priceAccs = tokens.map((t) => getPythPriceAcc(t, cluster));
-
-        for (let i = 0; i < maxRetries; i++) {
-            // eslint-disable-next-line no-await-in-loop
-            const prices = await pythClient.getAssetPricesFromAccounts(priceAccs);
-            if (prices.some((price) => price.price === undefined || price.status === PriceStatus.Halted || price.status === PriceStatus.Unknown)) {
-                // eslint-disable-next-line no-console
-                console.warn(`Failed to fetch Pyth Data, retrying ${i}/${maxRetries}`);
-                // eslint-disable-next-line no-await-in-loop
-                await sleep(msBetweenRetries);
-            }
-            else {
-                // We can assert price to be true here because we checked in the if statement above, typescript just isn't smart enough to understand this
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                return zipSameLength(prices, tokens).map(({ fst: price, snd: token }) => price.price! / getDenomination(token));
-            }
-        }
-        throw new Error('Failed to fetch/parse pyth data, this usually means the price is undefined or the status is not trading');
+    private static async fetchPrices(priceFetcher: PriceFetcher, tokens: TokenType[]): Promise<number[]> {
+        const prices = await priceFetcher.getPrices(tokens);
+        return zipSameLength(prices, tokens).map(({ fst: price, snd: token }) => price / getDenomination(token));
     }
 }
 

@@ -1,6 +1,6 @@
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { INVALID_CONVERSION_RATE, INVALID_TOKEN_TYPE } from '../constants.js';
-import { FeeUtils } from '../sdk/paramManagers/fee/FeeUtils.js';
+import { FeeUtils } from './FeeUtils.js';
 import { TokenType } from './tokenTypes/TokenType.js';
 import { Fee } from './types.js';
 
