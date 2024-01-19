@@ -13,10 +13,10 @@ export type WardenInfo = {
     pubKey: PublicKey
 }
 
-export function getDefaultWarden(cluster: Cluster): WardenInfo {
+export function getDefaultWarden(cluster: Cluster): string {
     switch (cluster) {
-        case 'mainnet-beta': return { url: 'https://warden-mainnet.elusiv.io', pubKey: new PublicKey('6f3BpUtZUgsc4xiLyqNhwEuQZ9MxSXUdsUAAyYqZyxe9') };
-        case 'devnet': return { url: 'https://warden-devnet.elusiv.io', pubKey: new PublicKey('DKd9AdVt2ai1rZ37Y64rSvqEz1bubdPHhhYMccKruzfv') };
+        case 'mainnet-beta': return 'https://warden-mainnet.elusiv.io';
+        case 'devnet': return 'https://warden-devnet.elusiv.io';
         default: throw new Error('Invalid cluster for warden');
     }
 }

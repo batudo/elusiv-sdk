@@ -9,7 +9,7 @@ export { ElusivTxData } from './public/txData/ElusivTxData.js';
 export { SendTxData } from './public/txData/SendTxData.js';
 export { TopupTxData } from './public/txData/TopupTxData.js';
 export {
-    WardenInfo, getDefaultWarden, getElusivProgramId, getElusivPoolAddress,
+    getDefaultWarden, getElusivProgramId, getElusivPoolAddress,
 } from './public/WardenInfo.js';
 export { Elusiv } from './public/elusiv.js';
 export { ElusivViewer } from './public/elusivViewer.js';

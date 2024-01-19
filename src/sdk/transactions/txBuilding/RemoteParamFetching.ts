@@ -76,7 +76,14 @@ export class RemoteParamFetching {
         const blockHashInfoPromise = connection.getLatestBlockhash();
         const tokenSendFee = getMinimumBalanceForRentExemptAccount(connection).then((r) => BigInt(r));
 
-        return Promise.all([feeCalculatorPromise, activeCommitmentsPromise, lastUsedNoncePromise, merkleStartIndexPromise, lamportsPerTokenPromise, blockHashInfoPromise, tokenSendFee])
+        return Promise.all([
+            feeCalculatorPromise,
+            activeCommitmentsPromise,
+            lastUsedNoncePromise,
+            merkleStartIndexPromise,
+            lamportsPerTokenPromise,
+            blockHashInfoPromise,
+            tokenSendFee])
             .then((res) => ({
                 feeCalculator: res[0].calculator,
                 feeVersionData: res[0].feeVersionData,

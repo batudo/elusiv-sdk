@@ -1,17 +1,19 @@
+import { PublicKey } from '@solana/web3.js';
 import { INVALID_WARDEN_RESPONSE } from '../../constants.js';
-import { WardenInfo } from '../../public/WardenInfo.js';
-import { isWardenErrorResponse, isWardenRawDataResponse, isWardenSignatureResponse } from '../transactions/txBuilding/serializedTypes/typeGuards.js';
+import {
+    isWardenErrorResponse, isWardenPubkeyResponse, isWardenRawDataResponse, isWardenSignatureResponse,
+} from '../transactions/txBuilding/serializedTypes/typeGuards.js';
 import {
     WardenError,
-    WardenMessage, WardenRawDataResponse, WardenSignatureResponse,
+    WardenMessage, WardenPubkeyResponse, WardenRawDataResponse, WardenSignatureResponse,
 } from '../transactions/txBuilding/serializedTypes/types.js';
 import { fetchWrapper } from '../utils/networkingUtils.js';
 
 export class WardenCommunicator {
-    private wardenInfo: WardenInfo;
+    private url: string;
 
-    constructor(wardenInfo: WardenInfo) {
-        this.wardenInfo = wardenInfo;
+    constructor(url: string) {
+        this.url = url;
     }
 
     public postWardenSigRequest(wardenRequest: WardenMessage, timeout = 10000): Promise<WardenSignatureResponse> {
@@ -72,7 +74,7 @@ export class WardenCommunicator {
         return !err.message.includes('Transaction simulation failed') && err.message.includes('TransactionError');
     }
 
-    private async postWardenRequestJSON(wardenRequest: WardenMessage, timeout: number) {
+    public async postWardenRequestJSON(wardenRequest: WardenMessage, timeout: number) {
         const response = await this.postRequest(wardenRequest, timeout);
         const json = await response.json();
         if (!response.ok) {
@@ -84,7 +86,7 @@ export class WardenCommunicator {
     // We keep the timeout variable in case we want to use fetchWithTimeout instead in the future
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private postRequest(postData: WardenMessage, timeout = 10000): Promise<Response> {
-        return fetchWrapper(this.wardenInfo.url, {
+        return fetchWrapper(this.url, {
             method: 'POST',
             body: JSON.stringify(postData),
             headers: {
@@ -92,4 +94,29 @@ export class WardenCommunicator {
             },
         });
     }
+}
+
+export async function getWardenPubkey(url: string, timeout = 10000): Promise<PublicKey> {
+    return getWardenPubkeyRaw(url, timeout)
+        .then((res) => new PublicKey(res.result));
+}
+
+async function getWardenPubkeyRaw(url: string, timeout = 10000): Promise<WardenPubkeyResponse> {
+    const request: WardenMessage = {
+        jsonrpc: '2.0',
+        id: '0',
+        version: '1.0',
+        method: 'warden_pubkey',
+
+    };
+    const wardenComm = new WardenCommunicator(url);
+    return wardenComm.postWardenRequestJSON(request, timeout)
+        .then((json) => {
+            if (isWardenPubkeyResponse(json)) {
+                return json;
+            }
+            throw new Error(`${INVALID_WARDEN_RESPONSE}: ${JSON.stringify(json)}`);
+        }).catch((err) => {
+            throw err;
+        });
 }

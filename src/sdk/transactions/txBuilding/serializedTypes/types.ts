@@ -189,9 +189,11 @@ export type GetZkeyCall = 'get_zkey'
 
 export type AirdropCall = 'airdrop'
 
+export type GetWardenPubkeyCall = 'warden_pubkey';
+
 export type TxCall = 'elusiv_store' | 'elusiv_send';
 
-export type WardenMethod = GetCircuitCall | GetZkeyCall | AirdropCall | TxCall;
+export type WardenMethod = GetCircuitCall | GetZkeyCall | AirdropCall | TxCall | GetWardenPubkeyCall;
 
 /** Start Warden param definitions */
 
@@ -229,6 +231,8 @@ export type WardenResultResponse<T> = JSONRPCResponse & {
 }
 
 export type WardenSignatureResponse = WardenResultResponse<SignatureSerialized>;
+
+export type WardenPubkeyResponse = WardenResultResponse<string>;
 
 export type WardenRawDataResponse = WardenResultResponse<number[]>;
 
