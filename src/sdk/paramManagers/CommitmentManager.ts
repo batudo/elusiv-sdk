@@ -146,20 +146,32 @@ export class CommitmentManager {
         const treeChunkReader = new TreeChunkAccountReader(this.connection);
         const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
 
+        let subscriptionId: number | null = null;
+
+        function closeWebSocketConnection(connection: Connection) {
+            if (subscriptionId !== null) {
+                connection.removeAccountChangeListener(subscriptionId);
+                subscriptionId = null;
+            }
+        }
+
         let commitmentIndex: LocalIndex = { index: -1, level: -1 };
-        let toClose = false;
-        const subscriptionId = await this.connection.onAccountChange(storageAcc, async (accInfo) => {
+        const toClose = false;
+        subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
             const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
 
             const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
 
             const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
-            if (gIndex === undefined) {
-                return;
+            if (gIndex) {
+                commitmentIndex = IndexConverter.globalIndexToLocalIndex(gIndex);
             }
-            commitmentIndex = IndexConverter.globalIndexToLocalIndex(gIndex);
-            toClose = true;
-        });
+
+            if (commitmentIndex !== undefined) {
+                // Close the connection when commitmentIndex exists
+                closeWebSocketConnection(this.connection);
+            }
+        }, 'finalized');
 
         if (toClose) {
             this.connection.removeAccountChangeListener(subscriptionId);
