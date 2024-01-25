@@ -173,7 +173,7 @@ export class TreeManager {
         return Poseidon.getPoseidon().montToRepr(defaultValues[level]);
     }
 
-    private static commLeafIndexToLocalIndex(leafIndex: number): LocalIndex {
+    public static commLeafIndexToLocalIndex(leafIndex: number): LocalIndex {
         // - 100 just in case to allow for some buffer
         const bufferedIndex = Math.max(leafIndex - 100, 0);
         return IndexConverter.leafIndexToLocalIndex(bufferedIndex);

@@ -139,7 +139,7 @@ export class Elusiv extends ElusivViewer {
         const feeManager = FeeManager.createFeeManager(connection, cluster);
         const txManager = TransactionManager.createTxManager(connection, cluster, seedWrapper.getRootViewingKeyWrapper());
         const treeManager = TreeManager.createTreeManager(connection, cluster);
-        const commManager = CommitmentManager.createCommitmentManager(treeManager, txManager);
+        const commManager = CommitmentManager.createCommitmentManager(connection, cluster, treeManager, txManager);
         const wardenKey = await getWardenPubkey(wardenURL);
         const result = new Elusiv(cluster, owner, wardenKey, wardenURL, connection, txManager, feeManager, commManager, treeManager, seedWrapper, priceFetcher);
         // Finish initializing poseidon
@@ -353,7 +353,7 @@ export class Elusiv extends ElusivViewer {
             else throw err;
         }
 
-        const commitmentInsertionPromise = this.commManager.awaitCommitmentInsertion(txData.commitmentHash, txData.merkleStartIndex, undefined, 10 * 60 * 1000).then(async (foundComm) => {
+        const commitmentInsertionPromise = this.commManager.awaitCommitmentInsertion(txData.commitmentHash, txData.merkleStartIndex).then(async (foundComm) => {
             let foundSig = false;
             if (foundComm) {
                 const isMerge = txData.txType === 'TOPUP' && (txData as TopupTxData).merge;
