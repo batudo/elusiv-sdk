@@ -147,7 +147,7 @@ export class CommitmentManager {
             const treeChunkReader = new TreeChunkAccountReader(this.connection);
             const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
 
-            let commitmentIndex: LocalIndex = { index: -1, level: -1 };
+            let commitmentIndex: LocalIndex;
             const subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
                 const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
 
