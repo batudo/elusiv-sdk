@@ -1,104 +1,104 @@
 {
-    "name": "@elusiv/sdk",
-    "version": "0.1.29",
-    "main": "index.mjs",
-    "module": "index.mjs",
-    "types": "index.d.ts",
-    "type": "module",
-    "files": [
-        "index.cjs",
-        "index.mjs",
-        "index.d.ts"
-    ],
-    "exports": [
-        {
-            "import": "./index.mjs",
-            "require": "./index.cjs"
-        }
-    ],
-    "engines": {
-        "node": ">=18.0.0"
-    },
-    "scripts": {
-        "lint": "eslint --ext .ts src/ test/",
-        "lint:fix": "eslint --ext .ts src/ test/ --fix",
-        "clean": "rm -rf dist/ && rm -rf build/",
-        "compile": "tsc",
-        "bundle:cjs": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config config/rollup.config.cjs.js",
-        "bundle:esm": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config config/rollup.config.esm.js",
-        "bundle:dts": "npm run compile && node node_modules/rollup/dist/bin/rollup --config config/rollup.config.dts.js",
-        "bundle": "npm run bundle:cjs && npm run bundle:esm && npm run bundle:dts",
-        "build": "npm run clean && npm run bundle && ./scripts/buildRelease.sh",
-        "release": "npm run build && npm publish ./build/release/elusiv-sdk-*.tgz --access public",
-        "docs": "set -ex; typedoc --treatWarningsAsErrors --excludeProtected",
-        "test": "mocha 'test/**/*.{ts,js}' --exit",
-        "test-single": "mocha $1 --exit",
-        "main": "npm run clean && tsc && node dist/main.js",
-        "update-token": "./scripts/updateToken.sh"
-    },
-    "dependencies": {
-        "@dao-xyz/borsh": "^5.1.5",
-        "@noble/hashes": "^1.1.5",
-        "@pythnetwork/client": "^2.19.0",
-        "@solana/spl-token": "^0.3.5",
-        "@solana/web3.js": "^1.75.0",
-        "aes-js": "^3.1.2",
-        "bs58": "^5.0.0",
-        "elusiv-circuits": "git@github.com:elusiv-privacy/circuits.git",
-        "@elusiv/cryptojs": "^1.0.12",
-        "@elusiv/serialization": "^1.0.11",
-        "node-fetch": "^3.3.1"
-    },
-    "devDependencies": {
-        "@iarna/toml": "^2.2.5",
-        "@rollup/plugin-commonjs": "^25.0.0",
-        "@rollup/plugin-json": "^6.0.0",
-        "@rollup/plugin-node-resolve": "^15.0.2",
-        "@rollup/plugin-replace": "^5.0.2",
-        "@rollup/plugin-terser": "^0.4.1",
-        "@rollup/plugin-typescript": "^11.0.0",
-        "@rollup/plugin-virtual": "^3.0.1",
-        "@types/aes-js": "^3.1.1",
-        "@types/bn.js": "^5.1.1",
-        "@types/bs58": "^4.0.1",
-        "@types/chai": "^4.3.0",
-        "@types/chai-as-promised": "^7.1.5",
-        "@types/crypto-js": "^4.1.1",
-        "@types/mocha": "^10.0.1",
-        "@types/node-fetch": "^2.6.3",
-        "@typescript-eslint/eslint-plugin": "^5.59.5",
-        "@typescript-eslint/parser": "^5.59.0",
-        "chai": "^4.3.4",
-        "chai-as-promised": "^7.1.1",
-        "eslint": "^8.40.0",
-        "eslint-config-airbnb-base": "^15.0.0",
-        "eslint-plugin-import": "^2.25.4",
-        "mocha": "^10.2.0",
-        "rollup": "^3.20.0",
-        "rollup-plugin-dts": "^5.3.0",
-        "rollup-plugin-polyfill-node": "^0.11.0",
-        "ts-node": "^10.4.0",
-        "typedoc": "^0.24.7",
-        "typescript": "^4.9.4"
-    },
-    "author": "Elusiv Privacy",
-    "description": "Client SDK for interacting with Elusiv on-chain programs",
-    "homepage": "https://elusiv.io",
-    "bugs": {
-        "url": "https://github.com/elusiv-privacy/elusiv-sdk/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/elusiv-privacy/elusiv-sdk.git"
-    },
-    "keywords": [
-        "Zero Knowledge",
-        "Cryptography",
-        "Privacy",
-        "Blockchain",
-        "Solana",
-        "Elusiv",
-        "Library"
-    ],
-    "license": "ISC"
+	"name": "@elusiv/sdk",
+	"version": "0.1.30",
+	"main": "index.mjs",
+	"module": "index.mjs",
+	"types": "index.d.ts",
+	"type": "module",
+	"files": [
+		"index.cjs",
+		"index.mjs",
+		"index.d.ts"
+	],
+	"exports": [
+		{
+			"import": "./index.mjs",
+			"require": "./index.cjs"
+		}
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"scripts": {
+		"lint": "eslint --ext .ts src/ test/",
+		"lint:fix": "eslint --ext .ts src/ test/ --fix",
+		"clean": "rm -rf dist/ && rm -rf build/",
+		"compile": "tsc",
+		"bundle:cjs": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config config/rollup.config.cjs.js",
+		"bundle:esm": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config config/rollup.config.esm.js",
+		"bundle:dts": "npm run compile && node node_modules/rollup/dist/bin/rollup --config config/rollup.config.dts.js",
+		"bundle": "npm run bundle:cjs && npm run bundle:esm && npm run bundle:dts",
+		"build": "npm run clean && npm run bundle && ./scripts/buildRelease.sh",
+		"release": "npm run build && npm publish ./build/release/elusiv-sdk-*.tgz --access public",
+		"docs": "set -ex; typedoc --treatWarningsAsErrors --excludeProtected",
+		"test": "mocha 'test/**/*.{ts,js}' --exit",
+		"test-single": "mocha $1 --exit",
+		"main": "npm run clean && tsc && node dist/main.js",
+		"update-token": "./scripts/updateToken.sh"
+	},
+	"dependencies": {
+		"@dao-xyz/borsh": "^5.1.5",
+		"@noble/hashes": "^1.1.5",
+		"@pythnetwork/client": "^2.19.0",
+		"@solana/spl-token": "^0.3.5",
+		"@solana/web3.js": "^1.75.0",
+		"aes-js": "^3.1.2",
+		"bs58": "^5.0.0",
+		"elusiv-circuits": "git@github.com:elusiv-privacy/circuits.git",
+		"@elusiv/cryptojs": "^1.0.12",
+		"@elusiv/serialization": "^1.0.11",
+		"node-fetch": "^3.3.1"
+	},
+	"devDependencies": {
+		"@iarna/toml": "^2.2.5",
+		"@rollup/plugin-commonjs": "^25.0.0",
+		"@rollup/plugin-json": "^6.0.0",
+		"@rollup/plugin-node-resolve": "^15.0.2",
+		"@rollup/plugin-replace": "^5.0.2",
+		"@rollup/plugin-terser": "^0.4.1",
+		"@rollup/plugin-typescript": "^11.0.0",
+		"@rollup/plugin-virtual": "^3.0.1",
+		"@types/aes-js": "^3.1.1",
+		"@types/bn.js": "^5.1.1",
+		"@types/bs58": "^4.0.1",
+		"@types/chai": "^4.3.0",
+		"@types/chai-as-promised": "^7.1.5",
+		"@types/crypto-js": "^4.1.1",
+		"@types/mocha": "^10.0.1",
+		"@types/node-fetch": "^2.6.3",
+		"@typescript-eslint/eslint-plugin": "^5.59.5",
+		"@typescript-eslint/parser": "^5.59.0",
+		"chai": "^4.3.4",
+		"chai-as-promised": "^7.1.1",
+		"eslint": "^8.40.0",
+		"eslint-config-airbnb-base": "^15.0.0",
+		"eslint-plugin-import": "^2.25.4",
+		"mocha": "^10.2.0",
+		"rollup": "^3.20.0",
+		"rollup-plugin-dts": "^5.3.0",
+		"rollup-plugin-polyfill-node": "^0.11.0",
+		"ts-node": "^10.4.0",
+		"typedoc": "^0.24.7",
+		"typescript": "^4.9.4"
+	},
+	"author": "Elusiv Privacy",
+	"description": "Client SDK for interacting with Elusiv on-chain programs",
+	"homepage": "https://elusiv.io",
+	"bugs": {
+		"url": "https://github.com/elusiv-privacy/elusiv-sdk/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/elusiv-privacy/elusiv-sdk.git"
+	},
+	"keywords": [
+		"Zero Knowledge",
+		"Cryptography",
+		"Privacy",
+		"Blockchain",
+		"Solana",
+		"Elusiv",
+		"Library"
+	],
+	"license": "ISC"
 }

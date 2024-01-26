@@ -147,10 +147,8 @@ export class CommitmentManager {
             const treeChunkReader = new TreeChunkAccountReader(this.connection);
             const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
 
-            let subscriptionId: number | null = null;
-
             let commitmentIndex: LocalIndex = { index: -1, level: -1 };
-            subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
+            const subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
                 const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
 
                 const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
@@ -158,14 +156,14 @@ export class CommitmentManager {
                 const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
                 if (gIndex) {
                     commitmentIndex = IndexConverter.globalIndexToLocalIndex(gIndex);
+
+                    if (commitmentIndex !== undefined) {
+                        // Close the connection when commitmentIndex exists
+                        this.connection.removeAccountChangeListener(subscriptionId);
+                        resolve(commitmentIndex.index !== -1);
+                    }
                 }
             }, 'finalized');
-
-            if (commitmentIndex !== undefined) {
-                // Close the connection when commitmentIndex exists
-                this.connection.removeAccountChangeListener(subscriptionId);
-                resolve(commitmentIndex.index !== -1);
-            }
         });
     }
 
