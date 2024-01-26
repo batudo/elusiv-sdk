@@ -63,7 +63,7 @@ const config = [{
             'process.browser': true,
         }),
         nodePolyfills({ include: null }),
-        // terser(),
+        terser(),
     ],
 }];
 export default config;
