@@ -138,46 +138,35 @@ export class CommitmentManager {
     }
 
     public async awaitCommitmentInsertion(commitmentHash: ReprScalar, startingIndex = 0): Promise<boolean> {
-        const startPointer: LocalIndex = TreeManager.commLeafIndexToLocalIndex(startingIndex);
+        return new Promise((resolve) => {
+            const startPointer: LocalIndex = TreeManager.commLeafIndexToLocalIndex(startingIndex);
 
-        const storageAcc = AccountReader.generateElusivPDAFrom([STORAGE_ACC_SEED], getElusivProgramId(this.cluster))[0];
+            const storageAcc = AccountReader.generateElusivPDAFrom([STORAGE_ACC_SEED], getElusivProgramId(this.cluster))[0];
 
-        const accIndex = IndexConverter.localIndexToAccIndex(startPointer);
-        const treeChunkReader = new TreeChunkAccountReader(this.connection);
-        const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
+            const accIndex = IndexConverter.localIndexToAccIndex(startPointer);
+            const treeChunkReader = new TreeChunkAccountReader(this.connection);
+            const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
 
-        let subscriptionId: number | null = null;
+            let subscriptionId: number | null = null;
 
-        function closeWebSocketConnection(connection: Connection) {
-            if (subscriptionId !== null) {
-                connection.removeAccountChangeListener(subscriptionId);
-                subscriptionId = null;
-            }
-        }
+            let commitmentIndex: LocalIndex = { index: -1, level: -1 };
+            subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
+                const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
 
-        let commitmentIndex: LocalIndex = { index: -1, level: -1 };
-        const toClose = false;
-        subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
-            const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
+                const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
 
-            const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
-
-            const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
-            if (gIndex) {
-                commitmentIndex = IndexConverter.globalIndexToLocalIndex(gIndex);
-            }
+                const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
+                if (gIndex) {
+                    commitmentIndex = IndexConverter.globalIndexToLocalIndex(gIndex);
+                }
+            }, 'finalized');
 
             if (commitmentIndex !== undefined) {
                 // Close the connection when commitmentIndex exists
-                closeWebSocketConnection(this.connection);
+                this.connection.removeAccountChangeListener(subscriptionId);
+                resolve(commitmentIndex.index !== -1);
             }
-        }, 'finalized');
-
-        if (toClose) {
-            this.connection.removeAccountChangeListener(subscriptionId);
-        }
-
-        return commitmentIndex.index !== -1;
+        });
     }
 
     private async getCommitmentForPartialSend(partialSendTx: PartialSendTx, seedWrapper: SeedWrapper): Promise<IncompleteCommitment> {
