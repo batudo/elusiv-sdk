@@ -353,7 +353,7 @@ export class Elusiv extends ElusivViewer {
             else throw err;
         }
 
-        const commitmentInsertionPromise = this.commManager.awaitCommitmentInsertion(txData.commitmentHash, txData.merkleStartIndex, undefined, 10 * 60 * 1000).then(async (foundComm) => {
+        const commitmentInsertionPromise = this.commManager.awaitCommitmentInsertion(txData.commitmentHash, txData.merkleStartIndex, 10 * 60 * 1000).then(async (foundComm) => {
             let foundSig = false;
             if (foundComm) {
                 const isMerge = txData.txType === 'TOPUP' && (txData as TopupTxData).merge;
