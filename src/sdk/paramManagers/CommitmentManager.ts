@@ -137,40 +137,34 @@ export class CommitmentManager {
         throw new Error(INVALID_TX_TYPE);
     }
 
-    // Default: 500 ms between fetches, 2 min timeout
-    public async awaitCommitmentInsertion(commitmentHash: ReprScalar, startingIndex = 0, delayBetweenFetches = 500, timeout: number = 2 * 60 * 1000): Promise<boolean> {
+    // Default: 2 min timeout
+    public async awaitCommitmentInsertion(commitmentHash: ReprScalar, startingIndex = 0, timeout: number = 2 * 60 * 1000): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            let attempts = 1;
+            const startPointer: LocalIndex = TreeManager.commLeafIndexToLocalIndex(startingIndex);
 
-            const interval = setInterval(async () => {
-                const startPointer: LocalIndex = TreeManager.commLeafIndexToLocalIndex(startingIndex);
+            const storageAcc = AccountReader.generateElusivPDAFrom([STORAGE_ACC_SEED], getElusivProgramId(this.cluster))[0];
 
-                const storageAcc = AccountReader.generateElusivPDAFrom([STORAGE_ACC_SEED], getElusivProgramId(this.cluster))[0];
+            const accIndex = IndexConverter.localIndexToAccIndex(startPointer);
+            const treeChunkReader = new TreeChunkAccountReader(this.connection);
+            const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
 
-                const accIndex = IndexConverter.localIndexToAccIndex(startPointer);
-                const treeChunkReader = new TreeChunkAccountReader(this.connection);
-                const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
+            const subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
+                const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
 
-                const subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
-                    const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
+                const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
 
-                    const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
-
-                    const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
-                    if (gIndex) {
-                        clearInterval(interval);
-                        // Close the connection when gIndex exists
-                        this.connection.removeAccountChangeListener(subscriptionId);
-                        resolve(gIndex !== -1);
-                    }
-                }, 'finalized');
-
-                if (attempts * delayBetweenFetches > timeout) {
+                const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
+                if (gIndex) {
+                    // Close the connection when gIndex exists
                     this.connection.removeAccountChangeListener(subscriptionId);
-                    reject(new Error(TIMEOUT_ERR('Fetch commitment')));
+                    resolve(gIndex !== -1);
                 }
-                attempts++;
-            }, delayBetweenFetches);
+            }, 'finalized');
+
+            setTimeout(() => {
+                this.connection.removeAccountChangeListener(subscriptionId);
+                reject(new Error(TIMEOUT_ERR('Fetch commitment')));
+            }, timeout);
         });
     }
 
