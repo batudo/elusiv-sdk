@@ -68,7 +68,7 @@ export class StorageAccountReader extends AccountReader {
         return { indices: await Promise.all(fetchedCommIndices).then((maps) => mergeMaps(maps)), storageAcc: storageData };
     }
 
-    private static async findCommitmentIndicesAcrossChunks(comms: readonly Pair<MontScalar, AccIndex>[], treeChunkReader: TreeChunkAccountReader, storageAcc: StorageAccBorsh): Promise<Map<MontScalar, GlobalIndex>> {
+    public static async findCommitmentIndicesAcrossChunks(comms: readonly Pair<MontScalar, AccIndex>[], treeChunkReader: TreeChunkAccountReader, storageAcc: StorageAccBorsh): Promise<Map<MontScalar, GlobalIndex>> {
         const res: Map<MontScalar, GlobalIndex> = new Map();
         if (comms.length === 0) return res;
 

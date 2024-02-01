@@ -3,7 +3,7 @@ import {
     ConfirmedSignatureInfo,
     Connection, PublicKey, SystemProgram,
 } from '@solana/web3.js';
-import { Poseidon } from '@elusiv/cryptojs';
+import { Poseidon, ReprScalar } from '@elusiv/cryptojs';
 import { bigIntToNumber, uint8ArrayToHex } from '@elusiv/serialization';
 import { getMinimumBalanceForRentExemptAccount } from '@solana/spl-token';
 import { CommitmentManager } from '../sdk/paramManagers/CommitmentManager.js';
@@ -139,7 +139,7 @@ export class Elusiv extends ElusivViewer {
         const feeManager = FeeManager.createFeeManager(connection, cluster);
         const txManager = TransactionManager.createTxManager(connection, cluster, seedWrapper.getRootViewingKeyWrapper());
         const treeManager = TreeManager.createTreeManager(connection, cluster);
-        const commManager = CommitmentManager.createCommitmentManager(treeManager, txManager);
+        const commManager = CommitmentManager.createCommitmentManager(connection, cluster, treeManager, txManager);
         const wardenKey = await getWardenPubkey(wardenURL);
         const result = new Elusiv(cluster, owner, wardenKey, wardenURL, connection, txManager, feeManager, commManager, treeManager, seedWrapper, priceFetcher);
         // Finish initializing poseidon
@@ -353,7 +353,7 @@ export class Elusiv extends ElusivViewer {
             else throw err;
         }
 
-        const commitmentInsertionPromise = this.commManager.awaitCommitmentInsertion(txData.commitmentHash, txData.merkleStartIndex, undefined, 10 * 60 * 1000).then(async (foundComm) => {
+        const commitmentInsertionPromise = this.awaitCommitmentInsertion(txData.commitmentHash, txData.merkleStartIndex, 10 * 60 * 1000).then(async (foundComm) => {
             let foundSig = false;
             if (foundComm) {
                 const isMerge = txData.txType === 'TOPUP' && (txData as TopupTxData).merge;
@@ -368,6 +368,17 @@ export class Elusiv extends ElusivViewer {
         });
 
         return { elusivTxSig, commitmentInsertionPromise };
+    }
+
+    /**
+     * Check if a commitment has been inserted.
+     * @param commitmentHash The hash of the commitment.
+     * @param mtStartIndex The index to start looking for the commitment in the merkle tree.
+     * @param timeoutMs The timeout in milliseconds.
+     * @returns A promise that resolves to a boolean indicating whether the commitment has been inserted.
+     */
+    public async awaitCommitmentInsertion(commitmentHash: ReprScalar, mtStartIndex: number, timeoutMs: number): Promise<boolean> {
+        return this.commManager.awaitCommitmentInsertion(commitmentHash, mtStartIndex, timeoutMs);
     }
 
     /**

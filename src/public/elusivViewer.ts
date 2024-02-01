@@ -63,7 +63,7 @@ export class ElusivViewer {
         const poseidonSetup = Poseidon.setupPoseidon();
         const txManager = TransactionManager.createTxManager(connection, cluster, new RVKWrapper(hexToUint8Array(rootViewingKey)));
         const treeManager = TreeManager.createTreeManager(connection, cluster);
-        const commManager = CommitmentManager.createCommitmentManager(treeManager, txManager);
+        const commManager = CommitmentManager.createCommitmentManager(connection, cluster, treeManager, txManager);
         const result = new ElusivViewer(cluster, connection, txManager, commManager);
         // Finish initializing poseidon
         await poseidonSetup;

@@ -1,13 +1,15 @@
 import {
-    Commitment, IncompleteCommitment, Poseidon, ReprScalar,
+    Commitment, IncompleteCommitment, MontScalar, Poseidon, ReprScalar,
 } from '@elusiv/cryptojs';
 import { equalsUint8Arr } from '@elusiv/serialization';
+import { Cluster, Connection } from '@solana/web3.js';
+import { deserialize } from '@dao-xyz/borsh';
 import { PartialSendTx, SendTx } from '../transactions/SendTx.js';
 import { PartialStoreTx } from '../transactions/StoreTx.js';
 import { TreeManager } from './TreeManager.js';
 import { TransactionManager } from '../txManagers/TransactionManager.js';
 import {
-    INVALID_SIZE, INVALID_TX_TYPE, SEND_ARITY, TIMEOUT_ERR,
+    INVALID_SIZE, INVALID_TX_TYPE, SEND_ARITY, STORAGE_ACC_SEED, TIMEOUT_ERR,
 } from '../../constants.js';
 import { getNumberFromTokenType } from '../../public/tokenTypes/TokenTypeFuncs.js';
 import { buildCommitmentSet, GeneralSet } from '../utils/GeneralSet.js';
@@ -16,22 +18,37 @@ import { zipSameLength } from '../utils/utils.js';
 import { SeedWrapper } from '../clientCrypto/SeedWrapper.js';
 import { TokenType } from '../../public/tokenTypes/TokenType.js';
 import { CommitmentMetadata } from '../clientCrypto/CommitmentMetadata.js';
+import { AccountReader } from '../accountReaders/AccountReader.js';
+import { getElusivProgramId } from '../../public/WardenInfo.js';
+import { AccIndex, IndexConverter, LocalIndex } from '../utils/IndexConverter.js';
+import { TreeChunkAccountReader } from '../accountReaders/TreeChunkAccountReader.js';
+import { StorageAccBorsh } from '../transactions/txBuilding/serializedTypes/borshTypes/accounts/StorageAccBorsh.js';
+import { StorageAccountReader } from '../accountReaders/StorageAccountReader.js';
+import { Pair } from '../utils/Pair.js';
 
 export class CommitmentManager {
+    cluster: Cluster;
+
+    connection: Connection;
+
     txManager: TransactionManager;
 
     treeManager: TreeManager;
 
-    private constructor(txManager: TransactionManager, treeManager: TreeManager) {
+    private constructor(connection:Connection, cluster: Cluster, txManager: TransactionManager, treeManager: TreeManager) {
+        this.connection = connection;
+        this.cluster = cluster;
         this.txManager = txManager;
         this.treeManager = treeManager;
     }
 
     public static createCommitmentManager(
+        connection: Connection,
+        cluster: Cluster,
         treeManager: TreeManager,
         txManager: TransactionManager,
     ): CommitmentManager {
-        return new CommitmentManager(txManager, treeManager);
+        return new CommitmentManager(connection, cluster, txManager, treeManager);
     }
 
     public async getIncompleteCommitmentsForTxs(txs: ElusivTransaction[], seedWrapper: SeedWrapper): Promise<{ commitments: GeneralSet<IncompleteCommitment>, startIndices: (number | undefined)[] }> {
@@ -120,21 +137,34 @@ export class CommitmentManager {
         throw new Error(INVALID_TX_TYPE);
     }
 
-    // Default: 500 ms between fetches, 2 min timeout
-    public async awaitCommitmentInsertion(commitmentHash: ReprScalar, startingIndex = 0, delayBetweenFetches = 500, timeout: number = 2 * 60 * 1000): Promise<boolean> {
+    // Default: 2 min timeout
+    public async awaitCommitmentInsertion(commitmentHash: ReprScalar, startingIndex = 0, timeout: number = 2 * 60 * 1000): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            let attempts = 1;
-            const interval = setInterval(async () => {
-                const isInserted = await this.isCommitmentInserted(commitmentHash, startingIndex);
-                if (isInserted) {
-                    clearInterval(interval);
-                    resolve(isInserted);
+            const startPointer: LocalIndex = TreeManager.commLeafIndexToLocalIndex(startingIndex);
+
+            const storageAcc = AccountReader.generateElusivPDAFrom([STORAGE_ACC_SEED], getElusivProgramId(this.cluster))[0];
+
+            const accIndex = IndexConverter.localIndexToAccIndex(startPointer);
+            const treeChunkReader = new TreeChunkAccountReader(this.connection);
+            const commMont: Pair<MontScalar, AccIndex>[] = [{ fst: Poseidon.getPoseidon().reprToMont(commitmentHash), snd: accIndex }];
+
+            const subscriptionId = this.connection.onAccountChange(storageAcc, async (accInfo) => {
+                const storageAccData = deserialize(accInfo.data, StorageAccBorsh);
+
+                const fetchedCommitmentIndices = await StorageAccountReader.findCommitmentIndicesAcrossChunks(commMont, treeChunkReader, storageAccData);
+
+                const gIndex = fetchedCommitmentIndices.get(commMont[0].fst);
+                if (gIndex) {
+                    // Close the connection when gIndex exists
+                    this.connection.removeAccountChangeListener(subscriptionId);
+                    resolve(gIndex !== -1);
                 }
-                if (attempts * delayBetweenFetches >= timeout) {
-                    reject(new Error(TIMEOUT_ERR('Fetch commitment')));
-                }
-                attempts++;
-            }, delayBetweenFetches);
+            }, 'finalized');
+
+            setTimeout(() => {
+                this.connection.removeAccountChangeListener(subscriptionId);
+                reject(new Error(TIMEOUT_ERR('Fetch commitment')));
+            }, timeout);
         });
     }
 
